@@ -136,4 +136,33 @@ export interface Translations {
     importSuccess: string;
     importError: string;
   };
+  auth: {
+    signIn: string;
+    signOut: string;
+    account: string;
+    loginTitle: string;
+    loginSubtitle: string;
+    signInGoogle: string;
+    signInApple: string;
+    magicLink: string;
+    emailPlaceholder: string;
+    sendMagicLink: string;
+    linkSent: string;
+    customConfig: string;
+    supabaseUrl: string;
+    supabaseAnonKey: string;
+    saveConfig: string;
+    configSaved: string;
+    loggedInAs: string;
+    syncNow: string;
+    migrateLocal: string;
+    migratePrompt: string;
+    migrateSuccess: string;
+    cloudConfigured: string;
+    cloudNotConfigured: string;
+    localMode: string;
+    synced: string;
+    syncing: string;
+    offline: string;
+  };
 }
