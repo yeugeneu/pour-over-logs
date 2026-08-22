@@ -1,0 +1,38 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  body {
+    @apply bg-stone-900 text-stone-100 min-h-screen selection:bg-amber-600 selection:text-white;
+    font-feature-settings: "cv02", "cv03", "cv04", "cv11";
+  }
+
+  /* Custom scrollbar for sleeker UI */
+  ::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+  }
+  ::-webkit-scrollbar-track {
+    background: transparent;
+  }
+  ::-webkit-scrollbar-thumb {
+    background: rgba(140, 100, 75, 0.3);
+    border-radius: 9999px;
+  }
+  ::-webkit-scrollbar-thumb:hover {
+    background: rgba(140, 100, 75, 0.6);
+  }
+}
+
+.coffee-card-gradient {
+  background: linear-gradient(145deg, rgba(38, 30, 26, 0.85) 0%, rgba(26, 20, 18, 0.95) 100%);
+}
+
+.coffee-glow {
+  box-shadow: 0 0 25px -5px rgba(217, 119, 6, 0.25);
+}
+
+.coffee-glow-emerald {
+  box-shadow: 0 0 25px -5px rgba(16, 185, 129, 0.25);
+}

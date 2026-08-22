@@ -1,0 +1,416 @@
+import React, { useEffect, useState } from 'react';
+import { useCoffee } from '../../context/CoffeeContext';
+import { useI18n } from '../../i18n';
+import { BeanStatus, ProcessMethod, RoastLevel } from '../../types/coffee';
+import { calculateDaysOffRoast, getRestingStageInfo } from '../../utils/coffeeMath';
+import { FlavorTagSelector } from '../sensory/FlavorTagSelector';
+import { X, Layers, Check, Calendar } from 'lucide-react';
+
+export const BeanModal: React.FC = () => {
+  const { isBeanModalOpen, editingBeanId, closeBeanModal, addBean, updateBean, getBeanById } = useCoffee();
+  const { language, t } = useI18n();
+
+  const [name, setName] = useState('');
+  const [origin, setOrigin] = useState('Ethiopia (衣索比亞)');
+  const [region, setRegion] = useState('');
+  const [farmOrStation, setFarmOrStation] = useState('');
+  const [varietal, setVarietal] = useState('');
+  const [process, setProcess] = useState<ProcessMethod>('Washed');
+  const [roaster, setRoaster] = useState('');
+  const [roastLevel, setRoastLevel] = useState<RoastLevel>('Light');
+  const [roastDate, setRoastDate] = useState(new Date().toISOString().slice(0, 10));
+  const [tastingNotes, setTastingNotes] = useState<string[]>([]);
+  const [totalWeightGrams, setTotalWeightGrams] = useState(200);
+  const [remainingWeightGrams, setRemainingWeightGrams] = useState(200);
+  const [elevationMeters, setElevationMeters] = useState('');
+  const [status, setStatus] = useState<BeanStatus>('active');
+  const [notes, setNotes] = useState('');
+
+  const isEditing = !!editingBeanId;
+
+  useEffect(() => {
+    if (editingBeanId) {
+      const bean = getBeanById(editingBeanId);
+      if (bean) {
+        setName(bean.name);
+        setOrigin(bean.origin);
+        setRegion(bean.region || '');
+        setFarmOrStation(bean.farmOrStation || '');
+        setVarietal(bean.varietal || '');
+        setProcess(bean.process);
+        setRoaster(bean.roaster);
+        setRoastLevel(bean.roastLevel);
+        setRoastDate(bean.roastDate);
+        setTastingNotes(bean.tastingNotesPackage || []);
+        setTotalWeightGrams(bean.totalWeightGrams);
+        setRemainingWeightGrams(bean.remainingWeightGrams);
+        setElevationMeters(bean.elevationMeters || '');
+        setStatus(bean.status);
+        setNotes(bean.notes || '');
+      }
+    } else {
+      // Reset defaults
+      setName('');
+      setOrigin('Ethiopia (衣索比亞)');
+      setRegion('');
+      setFarmOrStation('');
+      setVarietal('');
+      setProcess('Washed');
+      setRoaster('');
+      setRoastLevel('Light');
+      setRoastDate(new Date().toISOString().slice(0, 10));
+      setTastingNotes([]);
+      setTotalWeightGrams(200);
+      setRemainingWeightGrams(200);
+      setElevationMeters('');
+      setStatus('active');
+      setNotes('');
+    }
+  }, [editingBeanId, isBeanModalOpen]);
+
+  if (!isBeanModalOpen) return null;
+
+  const daysOffRoast = calculateDaysOffRoast(roastDate);
+  const restInfo = getRestingStageInfo(daysOffRoast, roastLevel);
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!name.trim() || !roaster.trim()) return;
+
+    if (isEditing && editingBeanId) {
+      updateBean(editingBeanId, {
+        name,
+        origin,
+        region,
+        farmOrStation,
+        varietal,
+        process,
+        roaster,
+        roastLevel,
+        roastDate,
+        tastingNotesPackage: tastingNotes,
+        totalWeightGrams,
+        remainingWeightGrams,
+        elevationMeters,
+        status,
+        notes,
+      });
+    } else {
+      addBean({
+        name,
+        origin,
+        region,
+        farmOrStation,
+        varietal,
+        process,
+        roaster,
+        roastLevel,
+        roastDate,
+        tastingNotesPackage: tastingNotes,
+        totalWeightGrams,
+        remainingWeightGrams,
+        elevationMeters,
+        status,
+        notes,
+      });
+    }
+
+    closeBeanModal();
+  };
+
+  const processOptions: ProcessMethod[] = [
+    'Washed',
+    'Natural',
+    'Honey',
+    'Anaerobic',
+    'Thermal Shock',
+    'Carbonic Maceration',
+    'Wet Hulled',
+    'Experimental',
+    'Other',
+  ];
+
+  const roastOptions: RoastLevel[] = [
+    'Light',
+    'Light-Medium',
+    'Medium',
+    'Medium-Dark',
+    'Dark',
+  ];
+
+  return (
+    <div className="fixed inset-0 z-50 overflow-y-auto bg-black/80 backdrop-blur-sm flex items-center justify-center p-3 sm:p-4">
+      <div className="bg-stone-900 border border-stone-800 rounded-3xl w-full max-w-2xl shadow-2xl overflow-hidden flex flex-col max-h-[92vh]">
+        {/* Modal Header */}
+        <div className="p-4 sm:p-5 border-b border-stone-800 bg-stone-950/80 flex items-center justify-between">
+          <div className="flex items-center space-x-3">
+            <div className="p-2 rounded-xl bg-amber-500/10 border border-amber-500/20 text-amber-400">
+              <Layers className="w-5 h-5" />
+            </div>
+            <div>
+              <h3 className="font-bold text-base sm:text-lg text-stone-100">
+                {isEditing ? t.beans.editBean : t.beans.addBean}
+              </h3>
+              <p className="text-xs text-stone-400">
+                {language === 'zh-TW'
+                  ? '填寫精品豆履歷與烘焙資訊，系統將自動計算養豆狀態'
+                  : 'Enter bean metadata to track rest curves and brew history'}
+              </p>
+            </div>
+          </div>
+
+          <button
+            onClick={closeBeanModal}
+            className="p-2 rounded-xl hover:bg-stone-800 text-stone-400 hover:text-stone-200 transition"
+          >
+            <X className="w-5 h-5" />
+          </button>
+        </div>
+
+        {/* Form Body */}
+        <form onSubmit={handleSubmit} className="p-4 sm:p-6 overflow-y-auto flex-1 space-y-4">
+          {/* Bean Name */}
+          <div>
+            <label className="block text-xs font-semibold text-stone-300 mb-1">
+              {language === 'zh-TW' ? '咖啡豆名稱 (Bean Name) *' : 'Bean Name *'}
+            </label>
+            <input
+              type="text"
+              required
+              placeholder="e.g. 衣索比亞 耶加雪菲 歌姬 沃卡 日曬 G1"
+              value={name}
+              onChange={(e) => setName(e.target.value)}
+              className="w-full bg-stone-950 text-stone-100 text-sm px-3.5 py-2.5 rounded-xl border border-stone-800 focus:border-amber-500 focus:outline-none"
+            />
+          </div>
+
+          {/* Roaster & Origin Grid */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <div>
+              <label className="block text-xs font-semibold text-stone-300 mb-1">
+                {t.beans.roaster} *
+              </label>
+              <input
+                type="text"
+                required
+                placeholder="e.g. Simple Kaffa / The Barn / 自烘"
+                value={roaster}
+                onChange={(e) => setRoaster(e.target.value)}
+                className="w-full bg-stone-950 text-stone-100 text-xs px-3.5 py-2.5 rounded-xl border border-stone-800 focus:border-amber-500 focus:outline-none"
+              />
+            </div>
+
+            <div>
+              <label className="block text-xs font-semibold text-stone-300 mb-1">
+                {t.beans.origin}
+              </label>
+              <input
+                type="text"
+                placeholder="e.g. Ethiopia / Panama / Colombia"
+                value={origin}
+                onChange={(e) => setOrigin(e.target.value)}
+                className="w-full bg-stone-950 text-stone-100 text-xs px-3.5 py-2.5 rounded-xl border border-stone-800 focus:border-amber-500 focus:outline-none"
+              />
+            </div>
+          </div>
+
+          {/* Region, Farm & Varietal Grid */}
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+            <div>
+              <label className="block text-xs font-semibold text-stone-300 mb-1">
+                {t.beans.region}
+              </label>
+              <input
+                type="text"
+                placeholder="e.g. Yirgacheffe / Boquete"
+                value={region}
+                onChange={(e) => setRegion(e.target.value)}
+                className="w-full bg-stone-950 text-stone-100 text-xs px-3 py-2 rounded-xl border border-stone-800 focus:border-amber-500 focus:outline-none"
+              />
+            </div>
+
+            <div>
+              <label className="block text-xs font-semibold text-stone-300 mb-1">
+                {t.beans.varietal}
+              </label>
+              <input
+                type="text"
+                placeholder="e.g. Geisha / Heirloom / SL28"
+                value={varietal}
+                onChange={(e) => setVarietal(e.target.value)}
+                className="w-full bg-stone-950 text-stone-100 text-xs px-3 py-2 rounded-xl border border-stone-800 focus:border-amber-500 focus:outline-none"
+              />
+            </div>
+
+            <div>
+              <label className="block text-xs font-semibold text-stone-300 mb-1">
+                {language === 'zh-TW' ? '海拔 (Elevation)' : 'Elevation'}
+              </label>
+              <input
+                type="text"
+                placeholder="e.g. 1950-2100m"
+                value={elevationMeters}
+                onChange={(e) => setElevationMeters(e.target.value)}
+                className="w-full bg-stone-950 text-stone-100 text-xs px-3 py-2 rounded-xl border border-stone-800 focus:border-amber-500 focus:outline-none"
+              />
+            </div>
+          </div>
+
+          {/* Process & Roast Level */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <div>
+              <label className="block text-xs font-semibold text-stone-300 mb-1">
+                {t.beans.process}
+              </label>
+              <select
+                value={process}
+                onChange={(e) => setProcess(e.target.value as ProcessMethod)}
+                className="w-full bg-stone-950 text-stone-100 text-xs px-3 py-2.5 rounded-xl border border-stone-800 focus:border-amber-500 focus:outline-none"
+              >
+                {processOptions.map((opt) => (
+                  <option key={opt} value={opt}>
+                    {opt}
+                  </option>
+                ))}
+              </select>
+            </div>
+
+            <div>
+              <label className="block text-xs font-semibold text-stone-300 mb-1">
+                {t.beans.roastLevel}
+              </label>
+              <select
+                value={roastLevel}
+                onChange={(e) => setRoastLevel(e.target.value as RoastLevel)}
+                className="w-full bg-stone-950 text-stone-100 text-xs px-3 py-2.5 rounded-xl border border-stone-800 focus:border-amber-500 focus:outline-none"
+              >
+                {roastOptions.map((opt) => (
+                  <option key={opt} value={opt}>
+                    {opt}
+                  </option>
+                ))}
+              </select>
+            </div>
+          </div>
+
+          {/* Roast Date & Resting Stage Live Preview */}
+          <div className="p-3.5 bg-stone-950/60 rounded-2xl border border-stone-800 space-y-2">
+            <div className="flex items-center justify-between">
+              <label className="text-xs font-semibold text-stone-300 flex items-center gap-1.5">
+                <Calendar className="w-3.5 h-3.5 text-amber-500" />
+                <span>{t.beans.roastDate}</span>
+              </label>
+              <span
+                className={`text-xs px-2.5 py-0.5 rounded-full border font-semibold ${restInfo.badgeColor}`}
+              >
+                {language === 'zh-TW' ? `養豆 ${daysOffRoast} 天` : `${daysOffRoast}d`} • {language === 'zh-TW' ? restInfo.labelZh : restInfo.labelEn}
+              </span>
+            </div>
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 items-center">
+              <input
+                type="date"
+                required
+                value={roastDate}
+                onChange={(e) => setRoastDate(e.target.value)}
+                className="w-full bg-stone-900 text-stone-100 font-mono text-xs px-3 py-2 rounded-xl border border-stone-800 focus:border-amber-500 focus:outline-none"
+              />
+              <p className="text-[11px] text-stone-400 leading-relaxed">
+                💡 {language === 'zh-TW' ? restInfo.descriptionZh : restInfo.descriptionEn}
+              </p>
+            </div>
+          </div>
+
+          {/* Package Tasting Notes */}
+          <div className="space-y-1.5">
+            <label className="text-xs font-semibold text-stone-300">
+              {t.beans.tastingNotes}
+            </label>
+            <FlavorTagSelector
+              selectedTags={tastingNotes}
+              onChange={setTastingNotes}
+            />
+          </div>
+
+          {/* Weights & Status */}
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+            <div>
+              <label className="block text-xs font-semibold text-stone-300 mb-1">
+                {language === 'zh-TW' ? '總包裝克重 (Total g)' : 'Total Weight (g)'}
+              </label>
+              <input
+                type="number"
+                value={totalWeightGrams}
+                onChange={(e) => {
+                  const val = parseFloat(e.target.value) || 0;
+                  setTotalWeightGrams(val);
+                  if (!isEditing) setRemainingWeightGrams(val);
+                }}
+                className="w-full bg-stone-950 text-stone-100 font-mono text-xs px-3 py-2 rounded-xl border border-stone-800 focus:border-amber-500 focus:outline-none"
+              />
+            </div>
+
+            <div>
+              <label className="block text-xs font-semibold text-stone-300 mb-1">
+                {language === 'zh-TW' ? '目前剩餘克重 (Remaining g)' : 'Remaining Weight (g)'}
+              </label>
+              <input
+                type="number"
+                value={remainingWeightGrams}
+                onChange={(e) => setRemainingWeightGrams(parseFloat(e.target.value) || 0)}
+                className="w-full bg-stone-950 text-stone-100 font-mono text-xs px-3 py-2 rounded-xl border border-stone-800 focus:border-amber-500 focus:outline-none"
+              />
+            </div>
+
+            <div>
+              <label className="block text-xs font-semibold text-stone-300 mb-1">
+                {t.beans.filterStatus}
+              </label>
+              <select
+                value={status}
+                onChange={(e) => setStatus(e.target.value as BeanStatus)}
+                className="w-full bg-stone-950 text-stone-100 text-xs px-3 py-2.5 rounded-xl border border-stone-800 focus:border-amber-500 focus:outline-none"
+              >
+                <option value="active">{t.beans.active}</option>
+                <option value="resting">{t.beans.resting}</option>
+                <option value="finished">{t.beans.finished}</option>
+              </select>
+            </div>
+          </div>
+
+          {/* Notes */}
+          <div>
+            <label className="block text-xs font-semibold text-stone-300 mb-1">
+              {language === 'zh-TW' ? '備註與保存建議 (Notes)' : 'Notes'}
+            </label>
+            <textarea
+              rows={2}
+              value={notes}
+              onChange={(e) => setNotes(e.target.value)}
+              placeholder="e.g. 建議單向排氣閥密封常溫保存，低研磨細粉率..."
+              className="w-full bg-stone-950 text-stone-100 text-xs p-3 rounded-xl border border-stone-800 focus:border-amber-500 focus:outline-none resize-none"
+            />
+          </div>
+
+          {/* Modal Footer */}
+          <div className="pt-3 border-t border-stone-800 flex justify-end space-x-2">
+            <button
+              type="button"
+              onClick={closeBeanModal}
+              className="px-4 py-2 rounded-xl bg-stone-800 hover:bg-stone-700 text-stone-300 text-xs font-medium transition"
+            >
+              {language === 'zh-TW' ? '取消' : 'Cancel'}
+            </button>
+            <button
+              type="submit"
+              className="px-6 py-2 rounded-xl bg-gradient-to-r from-amber-600 to-amber-500 hover:from-amber-500 hover:to-amber-400 text-white text-xs font-bold transition shadow-md shadow-amber-900/30 flex items-center space-x-1.5"
+            >
+              <Check className="w-4 h-4" />
+              <span>{isEditing ? (language === 'zh-TW' ? '更新咖啡豆' : 'Update Bean') : (language === 'zh-TW' ? '加入豆架' : 'Add to Shelf')}</span>
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  );
+};
