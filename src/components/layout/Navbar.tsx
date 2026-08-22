@@ -2,6 +2,7 @@ import React from 'react';
 import { useCoffee } from '../../context/CoffeeContext';
 import { useI18n } from '../../i18n';
 import { Coffee, Flame, Plus, Sparkles, TrendingUp, History, Database, Layers } from 'lucide-react';
+import { SyncStatusBadge } from '../auth/SyncStatusBadge';
 
 export const Navbar: React.FC = () => {
   const { beans, logs, activeTab, setActiveTab, openBrewModal, openBeanModal } = useCoffee();
@@ -60,6 +61,9 @@ export const Navbar: React.FC = () => {
 
           {/* Action Buttons & Language Switch */}
           <div className="flex items-center space-x-2 sm:space-x-3">
+            {/* Cloud Sync / Auth Status Badge */}
+            <SyncStatusBadge />
+
             {/* Language Switch */}
             <button
               onClick={() => setLanguage(language === 'zh-TW' ? 'en' : 'zh-TW')}
