@@ -137,7 +137,7 @@ export const BeanScannerModal: React.FC<BeanScannerModalProps> = ({
                 </h3>
                 <span className="text-[10px] px-2 py-0.5 rounded-full bg-gradient-to-r from-amber-500/20 to-orange-500/20 text-amber-300 border border-amber-500/30 flex items-center gap-1">
                   <Sparkles className="w-3 h-3 text-amber-400" />
-                  <span>Gemini Vision</span>
+                  <span>Gemini 3.6 Flash</span>
                 </span>
               </div>
               <p className="text-xs text-stone-400 line-clamp-1">

@@ -73,6 +73,7 @@ export async function scanBeanBagWithAI(
 
 /**
  * Calls Google Gemini Flash Multimodal Vision API directly.
+ * Prioritizes gemini-3.6-flash, with automatic fallback if model name varies.
  */
 async function callGeminiVision(
   base64DataUrl: string,
@@ -82,7 +83,13 @@ async function callGeminiVision(
   const mimeType = parts[0]?.match(/:(.*?);/)?.[1] || 'image/jpeg';
   const base64Data = parts[1] || base64DataUrl;
 
-  const endpoint = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${apiKey}`;
+  // List of models to try in priority order
+  const candidateModels = [
+    'gemini-3.6-flash',
+    'gemini-2.5-flash',
+    'gemini-1.5-flash',
+    'gemini-flash',
+  ];
 
   const prompt = `
 You are an expert World Barista Championship sensory judge, Q-Grader, and OCR specialist for specialty coffee packaging.
@@ -142,56 +149,78 @@ Return ONLY a single valid JSON object matching this schema (NO markdown formatt
     },
   };
 
-  const response = await fetch(endpoint, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(body),
-  });
+  let lastError: Error | null = null;
 
-  if (!response.ok) {
-    const errorText = await response.text();
-    let parsedMsg = errorText;
+  for (const modelName of candidateModels) {
     try {
-      const errJson = JSON.parse(errorText);
-      if (errJson.error?.message) {
-        parsedMsg = errJson.error.message;
+      const endpoint = `https://generativelanguage.googleapis.com/v1beta/models/${modelName}:generateContent?key=${apiKey}`;
+
+      const response = await fetch(endpoint, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(body),
+      });
+
+      if (!response.ok) {
+        const errorText = await response.text();
+        let parsedMsg = errorText;
+        try {
+          const errJson = JSON.parse(errorText);
+          if (errJson.error?.message) {
+            parsedMsg = errJson.error.message;
+          }
+        } catch {}
+
+        // If 404 model not found, try next candidate model
+        if (response.status === 404) {
+          lastError = new Error(`Model ${modelName} not found: ${parsedMsg}`);
+          continue;
+        }
+
+        throw new Error(`Google Gemini API 錯誤 (${response.status}): ${parsedMsg}`);
       }
-    } catch {}
-    throw new Error(`Google Gemini API 錯誤 (${response.status}): ${parsedMsg}`);
+
+      const data = await response.json();
+      const rawText = data?.candidates?.[0]?.content?.parts?.[0]?.text;
+
+      if (!rawText) {
+        throw new Error('Gemini Vision 模型未返回辨識文字，請確認照片是否清晰');
+      }
+
+      const cleanedJson = rawText.replace(/```json\n?|\n?```/g, '').trim();
+      const parsed = JSON.parse(cleanedJson);
+
+      const weight = normalizeWeight(parsed.totalWeightGrams);
+      const rawTasting = Array.isArray(parsed.tastingNotes) ? parsed.tastingNotes : [];
+
+      return {
+        name: parsed.name || '精品手沖咖啡 (Specialty Coffee)',
+        roaster: parsed.roaster || '精品烘豆坊 (Specialty Roaster)',
+        origin: parsed.origin || 'Ethiopia (衣索比亞)',
+        region: parsed.region || '',
+        farmOrStation: parsed.farmOrStation || undefined,
+        varietal: parsed.varietal || '',
+        process: normalizeProcessMethod(parsed.process),
+        roastLevel: normalizeRoastLevel(parsed.roastLevel),
+        roastDate: normalizeRoastDate(parsed.roastDate),
+        elevationMeters: parsed.elevation || undefined,
+        tastingNotes: normalizeFlavorNotes(rawTasting),
+        totalWeightGrams: weight,
+        remainingWeightGrams: weight,
+        notes: parsed.notes || undefined,
+        rawDetectedText: parsed.rawDetectedText || undefined,
+        isMockDemo: false,
+        confidenceScore: 0.98,
+      };
+    } catch (err: any) {
+      lastError = err;
+      if (err.message && !err.message.includes('404')) {
+        throw err;
+      }
+    }
   }
 
-  const data = await response.json();
-  const rawText = data?.candidates?.[0]?.content?.parts?.[0]?.text;
-
-  if (!rawText) {
-    throw new Error('Gemini Vision 模型未返回辨識文字，請確認照片是否清晰');
-  }
-
-  const cleanedJson = rawText.replace(/```json\n?|\n?```/g, '').trim();
-  const parsed = JSON.parse(cleanedJson);
-
-  const weight = normalizeWeight(parsed.totalWeightGrams);
-  const rawTasting = Array.isArray(parsed.tastingNotes) ? parsed.tastingNotes : [];
-
-  return {
-    name: parsed.name || '精品手沖咖啡 (Specialty Coffee)',
-    roaster: parsed.roaster || '精品烘豆坊 (Specialty Roaster)',
-    origin: parsed.origin || 'Ethiopia (衣索比亞)',
-    region: parsed.region || '',
-    farmOrStation: parsed.farmOrStation || undefined,
-    varietal: parsed.varietal || '',
-    process: normalizeProcessMethod(parsed.process),
-    roastLevel: normalizeRoastLevel(parsed.roastLevel),
-    roastDate: normalizeRoastDate(parsed.roastDate),
-    elevationMeters: parsed.elevation || undefined,
-    tastingNotes: normalizeFlavorNotes(rawTasting),
-    totalWeightGrams: weight,
-    remainingWeightGrams: weight,
-    notes: parsed.notes || undefined,
-    rawDetectedText: parsed.rawDetectedText || undefined,
-    isMockDemo: false,
-    confidenceScore: 0.98,
-  };
+  throw lastError || new Error('所有 Gemini 模型連線嘗試皆失敗，請確認 API Key 與網路連線');
 }
 
 /**
