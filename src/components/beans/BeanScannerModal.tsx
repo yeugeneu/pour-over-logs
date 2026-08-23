@@ -20,6 +20,7 @@ import {
   Globe,
   Tag,
   AlertCircle,
+  FileText,
 } from 'lucide-react';
 
 interface BeanScannerModalProps {
@@ -42,8 +43,8 @@ export const BeanScannerModal: React.FC<BeanScannerModalProps> = ({
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
 
   // API Key Settings Modal
-  const [showKeyConfig, setShowKeyConfig] = useState(false);
   const [apiKeyInput, setApiKeyInput] = useState(getGeminiApiKey());
+  const [showKeyConfig, setShowKeyConfig] = useState(!getGeminiApiKey());
   const [keySavedBanner, setKeySavedBanner] = useState(false);
 
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -118,6 +119,7 @@ export const BeanScannerModal: React.FC<BeanScannerModalProps> = ({
   };
 
   const formatKB = (bytes: number) => `${Math.round(bytes / 1024)} KB`;
+  const isKeyConfigured = Boolean(getGeminiApiKey());
 
   return (
     <div className="fixed inset-0 z-50 overflow-y-auto bg-black/80 backdrop-blur-sm flex items-center justify-center p-3 sm:p-4">
@@ -147,10 +149,15 @@ export const BeanScannerModal: React.FC<BeanScannerModalProps> = ({
           <div className="flex items-center space-x-1.5">
             <button
               onClick={() => setShowKeyConfig(!showKeyConfig)}
-              className="p-2 rounded-xl hover:bg-stone-800 text-stone-400 hover:text-amber-300 transition"
+              className={`p-2 rounded-xl border transition flex items-center gap-1 text-xs ${
+                isKeyConfigured
+                  ? 'bg-stone-800/80 text-stone-400 hover:text-amber-300 border-stone-700'
+                  : 'bg-amber-500/10 text-amber-400 border-amber-500/30 hover:bg-amber-500/20'
+              }`}
               title="API Key Settings"
             >
-              <Key className="w-4 h-4" />
+              <Key className="w-3.5 h-3.5" />
+              <span className="hidden sm:inline">{isKeyConfigured ? 'API Key' : '設定 Key'}</span>
             </button>
             <button
               onClick={onClose}
@@ -161,22 +168,38 @@ export const BeanScannerModal: React.FC<BeanScannerModalProps> = ({
           </div>
         </div>
 
+        {/* Missing API Key Warning / Configuration Banner */}
+        {!isKeyConfigured && !showKeyConfig && (
+          <div className="p-3 bg-amber-500/10 border-b border-amber-500/20 flex items-center justify-between text-xs text-amber-300">
+            <div className="flex items-center gap-2">
+              <Key className="w-4 h-4 text-amber-400 shrink-0" />
+              <span>未設定 Gemini API Key（目前使用範例模式）。若要辨識真實包裝，請輸入免費 API Key。</span>
+            </div>
+            <button
+              onClick={() => setShowKeyConfig(true)}
+              className="px-2.5 py-1 bg-amber-500 hover:bg-amber-400 text-stone-950 font-bold rounded-lg shrink-0 ml-2"
+            >
+              立即設定
+            </button>
+          </div>
+        )}
+
         {/* API Key Config Dropdown */}
         {showKeyConfig && (
-          <div className="p-4 bg-stone-950 border-b border-stone-800 text-xs space-y-2">
+          <div className="p-4 bg-stone-950 border-b border-stone-800 text-xs space-y-2.5">
             <form onSubmit={handleSaveApiKey} className="space-y-2">
               <div className="flex items-center justify-between">
-                <label className="font-semibold text-stone-300 flex items-center gap-1.5">
+                <label className="font-semibold text-stone-200 flex items-center gap-1.5">
                   <Key className="w-3.5 h-3.5 text-amber-400" />
-                  <span>{t.scanner.apiKeyLabel}</span>
+                  <span>Google Gemini API Key (免費金鑰)</span>
                 </label>
                 <a
                   href="https://aistudio.google.com/app/apikey"
                   target="_blank"
                   rel="noreferrer"
-                  className="text-amber-400 hover:underline text-[11px]"
+                  className="text-amber-400 hover:underline text-[11px] font-semibold"
                 >
-                  {language === 'zh-TW' ? '取得免費 API Key ↗' : 'Get free API Key ↗'}
+                  {language === 'zh-TW' ? '30秒免費取得 Google API Key ↗' : 'Get free Google API Key ↗'}
                 </a>
               </div>
               <div className="flex gap-2">
@@ -184,12 +207,12 @@ export const BeanScannerModal: React.FC<BeanScannerModalProps> = ({
                   type="password"
                   value={apiKeyInput}
                   onChange={(e) => setApiKeyInput(e.target.value)}
-                  placeholder={t.scanner.apiKeyPlaceholder}
+                  placeholder="AIzaSy..."
                   className="flex-1 bg-stone-900 text-stone-100 font-mono text-xs px-3 py-2 rounded-xl border border-stone-800 focus:border-amber-500 focus:outline-none"
                 />
                 <button
                   type="submit"
-                  className="px-4 py-2 bg-amber-600 hover:bg-amber-500 text-white font-bold rounded-xl transition"
+                  className="px-4 py-2 bg-gradient-to-r from-amber-600 to-amber-500 hover:from-amber-500 hover:to-amber-400 text-white font-bold rounded-xl transition shadow-sm"
                 >
                   {t.scanner.saveApiKey}
                 </button>
@@ -197,7 +220,7 @@ export const BeanScannerModal: React.FC<BeanScannerModalProps> = ({
               {keySavedBanner && (
                 <div className="text-emerald-400 text-[11px] flex items-center gap-1">
                   <Check className="w-3.5 h-3.5" />
-                  <span>{language === 'zh-TW' ? '已成功保存 API Key！' : 'API Key saved successfully!'}</span>
+                  <span>{language === 'zh-TW' ? '已成功保存 Gemini API Key！已開啟真實 AI 視覺辨識' : 'API Key saved! Real-time vision scanning enabled.'}</span>
                 </div>
               )}
             </form>
@@ -312,20 +335,40 @@ export const BeanScannerModal: React.FC<BeanScannerModalProps> = ({
           {/* STEP 3: REVIEW & VERIFY */}
           {step === 'review' && extractedData && (
             <div className="space-y-4">
+              {/* Mock demo notice */}
+              {extractedData.isMockDemo && (
+                <div className="p-3 bg-amber-500/15 border border-amber-500/30 rounded-2xl text-xs text-amber-200 flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <AlertCircle className="w-4 h-4 text-amber-400 shrink-0" />
+                    <span>當前為<b>離線展示資料</b>（因未輸入 API Key）。若要辨識您的真實咖啡袋，請點擊右上角 🔑 輸入免費 Gemini API Key。</span>
+                  </div>
+                  <button
+                    onClick={() => setShowKeyConfig(true)}
+                    className="px-2.5 py-1 bg-amber-500 text-stone-950 font-bold rounded-lg shrink-0 ml-2"
+                  >
+                    設定 Key
+                  </button>
+                </div>
+              )}
+
               <div className="flex items-center justify-between">
                 <h4 className="font-bold text-xs sm:text-sm text-stone-200 flex items-center gap-1.5">
                   <Sparkles className="w-4 h-4 text-amber-400" />
                   <span>{t.scanner.reviewTitle}</span>
                 </h4>
-                <span className="text-[11px] text-emerald-400 font-mono font-semibold bg-emerald-500/10 px-2 py-0.5 rounded-full border border-emerald-500/30">
-                  AI 信心度 {Math.round((extractedData.confidenceScore || 0.95) * 100)}%
+                <span className={`text-[11px] font-mono font-semibold px-2 py-0.5 rounded-full border ${
+                  extractedData.isMockDemo
+                    ? 'bg-amber-500/10 text-amber-300 border-amber-500/30'
+                    : 'bg-emerald-500/10 text-emerald-400 border-emerald-500/30'
+                }`}>
+                  {extractedData.isMockDemo ? '展示模式 Demo' : `AI 辨識信心度 ${Math.round((extractedData.confidenceScore || 0.95) * 100)}%`}
                 </span>
               </div>
 
               <div className="grid grid-cols-1 md:grid-cols-12 gap-4">
                 {/* Photo Thumbnail */}
                 {capturedImageBase64 && (
-                  <div className="md:col-span-4 flex flex-col items-center">
+                  <div className="md:col-span-4 flex flex-col items-center space-y-2">
                     <div className="w-full aspect-square rounded-2xl overflow-hidden border border-stone-800 bg-stone-950 relative shadow-md">
                       <img
                         src={capturedImageBase64}
@@ -336,6 +379,19 @@ export const BeanScannerModal: React.FC<BeanScannerModalProps> = ({
                         📸 {imageStats ? formatKB(imageStats.compSize) : 'Captured'}
                       </div>
                     </div>
+
+                    {/* Raw OCR Text snippet if available */}
+                    {extractedData.rawDetectedText && (
+                      <div className="w-full p-2.5 rounded-xl bg-stone-950 border border-stone-800 text-[10px] text-stone-400 font-mono space-y-1">
+                        <div className="flex items-center gap-1 text-stone-300 font-bold">
+                          <FileText className="w-3 h-3 text-amber-500" />
+                          <span>辨識到的文字：</span>
+                        </div>
+                        <p className="line-clamp-3 text-stone-400">
+                          {extractedData.rawDetectedText}
+                        </p>
+                      </div>
+                    )}
                   </div>
                 )}
 

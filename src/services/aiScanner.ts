@@ -22,6 +22,8 @@ export interface ExtractedBeanMetadata {
   totalWeightGrams: number;
   remainingWeightGrams: number;
   notes?: string;
+  rawDetectedText?: string;
+  isMockDemo?: boolean;
   confidenceScore?: number;
 }
 
@@ -56,17 +58,17 @@ export async function scanBeanBagWithAI(
 ): Promise<ExtractedBeanMetadata> {
   const apiKey = getGeminiApiKey();
 
-  // If Gemini API Key is available, call Gemini 2.0 / 1.5 Flash Vision Endpoint
-  if (apiKey) {
-    try {
-      return await callGeminiVision(base64DataUrl, apiKey);
-    } catch (err) {
-      console.warn('Gemini API call failed, falling back to heuristic parsing:', err);
-    }
+  if (!apiKey) {
+    // If no API key is provided, return mock demo and clearly mark isMockDemo: true
+    const demo = await mockHeuristicScan();
+    return {
+      ...demo,
+      isMockDemo: true,
+    };
   }
 
-  // Fallback intelligent simulation / OCR heuristic parser for instant offline testing
-  return await mockHeuristicScan();
+  // Call Gemini Vision API directly
+  return await callGeminiVision(base64DataUrl, apiKey);
 }
 
 /**
@@ -76,7 +78,6 @@ async function callGeminiVision(
   base64DataUrl: string,
   apiKey: string
 ): Promise<ExtractedBeanMetadata> {
-  // Strip data:image/jpeg;base64, prefix
   const parts = base64DataUrl.split(',');
   const mimeType = parts[0]?.match(/:(.*?);/)?.[1] || 'image/jpeg';
   const base64Data = parts[1] || base64DataUrl;
@@ -84,24 +85,40 @@ async function callGeminiVision(
   const endpoint = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${apiKey}`;
 
   const prompt = `
-You are an expert World Barista Championship judge and specialty coffee packaging parser.
-Carefully examine this coffee bean bag / label photo and extract all structured coffee metadata.
+You are an expert World Barista Championship sensory judge, Q-Grader, and OCR specialist for specialty coffee packaging.
+Examine this coffee packaging / label photo with extreme precision. Extract all visible specialty coffee metadata into structured JSON.
 
-Return ONLY a single valid raw JSON object (with NO markdown backticks, no markdown formatting, and no explanation) matching this schema:
+Follow these strict extraction guidelines:
+1. "name": The primary title / single-origin coffee name printed on the label (e.g. "衣索比亞 耶加雪菲 沃卡 日曬 G1", "Panama Geisha Washed", "Colombia El Paraiso"). If multiple lines exist, combine origin + processing + grade.
+2. "roaster": The roastery, brand, or cafe name printed (e.g. "Simple Kaffa 興波咖啡", "The Barn", "Coffee Collective", "Oasis Coffee", "Blue Bottle", "自烘焙").
+3. "origin": Country of origin (e.g. "Ethiopia", "Panama", "Colombia", "Kenya", "Guatemala", "Costa Rica", "Taiwan", "Indonesia", "Brazil").
+4. "region": Sub-region, county, or growing area (e.g. "Yirgacheffe", "Boquete", "Huila", "Nyeri", "Alishan", "Tarrazu", "Antigua").
+5. "farmOrStation": Farm name, estate, washing station, or producer (e.g. "Finca Deborah", "Hacienda La Esmeralda", "Worka Sakaro", "El Paraiso").
+6. "varietal": Botanical cultivar (e.g. "Geisha", "Pink Bourbon", "SL28 / SL34", "Heirloom 原生種", "Typica", "Caturra", "Bourbon", "Castillo", "Sidra", "Pacamara").
+7. "process": Processing method (e.g. "Washed 水洗", "Natural 日曬", "Honey 蜜處理", "Anaerobic 厭氧", "Thermal Shock 熱衝擊", "Carbonic Maceration 二氧化碳浸漬").
+8. "roastLevel": Roast degree (e.g. "Light 淺焙", "Light-Medium 淺中", "Medium 中焙", "Medium-Dark 中深", "Dark 深焙"). If not explicitly printed, infer from specialty origin or leave "Light".
+9. "roastDate": Look carefully for stamped dates, printed dates, best-before dates, or handwritten dates. Convert to YYYY-MM-DD format. If only month/day or relative days are visible, compute best estimate.
+10. "elevation": Elevation / Altitude (e.g. "1900-2100m", "1650m", "2000 MASL").
+11. "tastingNotes": Array of all flavor descriptors printed on the bag (e.g. ["Jasmine", "Bergamot", "Peach", "Earl Grey", "Blueberry", "Honey", "Cacao"]).
+12. "totalWeightGrams": Package weight in grams (e.g. 200, 227, 250, 100, 454).
+13. "rawDetectedText": A brief transcription of the key lines of text detected on the package.
+
+Return ONLY a single valid JSON object matching this schema (NO markdown formatting, NO backticks):
 {
-  "name": "Full bean name as printed (e.g. 衣索比亞 耶加雪菲 歌姬 沃卡 日曬 G1 or Colombia Pink Bourbon)",
-  "roaster": "Roastery / Brand name (e.g. Simple Kaffa, The Barn, Blue Bottle)",
-  "origin": "Country of origin (e.g. Ethiopia / Panama / Colombia / Kenya / Taiwan / Guatemala)",
-  "region": "Sub-region / Area (e.g. Yirgacheffe, Boquete, Huila, Nyeri, Alishan)",
-  "farmOrStation": "Farm, Estate, Washing Station or Producer name",
-  "varietal": "Botanical varietal (e.g. Geisha, Pink Bourbon, SL28, Heirloom, Typica, Caturra, Sidra)",
-  "process": "Processing method (e.g. Washed, Natural, Honey, Anaerobic, Thermal Shock)",
-  "roastLevel": "Roast degree (e.g. Light, Light-Medium, Medium, Medium-Dark, Dark)",
-  "roastDate": "Roast date in YYYY-MM-DD format (if only year/month or days printed, infer best estimate)",
-  "elevation": "Elevation (e.g. 1950-2100m or 2000m)",
-  "tastingNotes": ["array", "of", "official", "flavor", "descriptors", "printed", "on", "bag"],
-  "totalWeightGrams": 200,
-  "notes": "Any additional brew recommendations or farmer details printed on the bag"
+  "name": string,
+  "roaster": string,
+  "origin": string,
+  "region": string,
+  "farmOrStation": string,
+  "varietal": string,
+  "process": string,
+  "roastLevel": string,
+  "roastDate": string,
+  "elevation": string,
+  "tastingNotes": string[],
+  "totalWeightGrams": number,
+  "notes": string,
+  "rawDetectedText": string
 }
 `;
 
@@ -133,24 +150,31 @@ Return ONLY a single valid raw JSON object (with NO markdown backticks, no markd
 
   if (!response.ok) {
     const errorText = await response.text();
-    throw new Error(`Gemini API error (${response.status}): ${errorText}`);
+    let parsedMsg = errorText;
+    try {
+      const errJson = JSON.parse(errorText);
+      if (errJson.error?.message) {
+        parsedMsg = errJson.error.message;
+      }
+    } catch {}
+    throw new Error(`Google Gemini API 錯誤 (${response.status}): ${parsedMsg}`);
   }
 
   const data = await response.json();
   const rawText = data?.candidates?.[0]?.content?.parts?.[0]?.text;
 
   if (!rawText) {
-    throw new Error('No text returned from Gemini Vision model');
+    throw new Error('Gemini Vision 模型未返回辨識文字，請確認照片是否清晰');
   }
 
-  // Parse JSON response
-  const parsed = JSON.parse(rawText.replace(/```json\n?|\n?```/g, '').trim());
+  const cleanedJson = rawText.replace(/```json\n?|\n?```/g, '').trim();
+  const parsed = JSON.parse(cleanedJson);
 
   const weight = normalizeWeight(parsed.totalWeightGrams);
   const rawTasting = Array.isArray(parsed.tastingNotes) ? parsed.tastingNotes : [];
 
   return {
-    name: parsed.name || '精品單品咖啡 (Specialty Coffee)',
+    name: parsed.name || '精品手沖咖啡 (Specialty Coffee)',
     roaster: parsed.roaster || '精品烘豆坊 (Specialty Roaster)',
     origin: parsed.origin || 'Ethiopia (衣索比亞)',
     region: parsed.region || '',
@@ -164,7 +188,9 @@ Return ONLY a single valid raw JSON object (with NO markdown backticks, no markd
     totalWeightGrams: weight,
     remainingWeightGrams: weight,
     notes: parsed.notes || undefined,
-    confidenceScore: 0.95,
+    rawDetectedText: parsed.rawDetectedText || undefined,
+    isMockDemo: false,
+    confidenceScore: 0.98,
   };
 }
 
@@ -172,66 +198,33 @@ Return ONLY a single valid raw JSON object (with NO markdown backticks, no markd
  * Intelligent simulation parser for testing without an API key.
  */
 async function mockHeuristicScan(): Promise<ExtractedBeanMetadata> {
-  // Simulate network delay for natural UX feel
-  await new Promise((resolve) => setTimeout(resolve, 1400));
+  await new Promise((resolve) => setTimeout(resolve, 1000));
 
-  const sampleVarieties = [
-    {
-      name: '衣索比亞 耶加雪菲 歌姬 沃卡 日曬 G1',
-      roaster: 'The Barn Coffee Roasters',
-      origin: 'Ethiopia (衣索比亞)',
-      region: 'Gedeb, Yirgacheffe',
-      farmOrStation: 'Worka Sakaro Washing Station',
-      varietal: 'Heirloom (原生種)',
-      process: 'Natural' as ProcessMethod,
-      roastLevel: 'Light' as RoastLevel,
-      elevationMeters: '2000-2200m',
-      tastingNotes: ['藍莓果醬', '草莓 Strawberry', '紫羅蘭 Violet', '蜂蜜 Honey'],
-      totalWeightGrams: 250,
-      notes: '建議研磨度偏細，水溫 92°C 展現明亮莓果花香與甜感餘韻。',
-    },
-    {
-      name: '巴拿馬 翡翠莊園 綠標 藝伎 水洗',
-      roaster: 'Simple Kaffa 興波咖啡',
-      origin: 'Panama (巴拿馬)',
-      region: 'Boquete, Chiriquí',
-      farmOrStation: 'Hacienda La Esmeralda (Jaramillo)',
-      varietal: 'Geisha (藝伎)',
-      process: 'Washed' as ProcessMethod,
-      roastLevel: 'Light' as RoastLevel,
-      elevationMeters: '1650-1800m',
-      tastingNotes: ['茉莉花 Jasmine', '佛手柑 Bergamot', '水蜜桃 White Peach', '荔枝 Lychee'],
-      totalWeightGrams: 100,
-      notes: '極致花香與細緻柑橘酸質，推薦 1:16 高萃取率手法。',
-    },
-    {
-      name: '哥倫比亞 聖圖阿里歐莊園 雙重厭氧熱衝擊 粉紅波旁',
-      roaster: 'Coffee Collective',
-      origin: 'Colombia (哥倫比亞)',
-      region: 'Cauca',
-      farmOrStation: 'Finca Santuario',
-      varietal: 'Pink Bourbon (粉紅波旁)',
-      process: 'Thermal Shock' as ProcessMethod,
-      roastLevel: 'Light-Medium' as RoastLevel,
-      elevationMeters: '1850-2050m',
-      tastingNotes: ['百香果 Passion Fruit', '紅石榴 Pomegranate', '熱帶水果', '紅酒發酵 Winey'],
-      totalWeightGrams: 200,
-      notes: '強烈熱帶水果爆炸香氣，低溫慢萃更能凸顯發酵甜感。',
-    },
-  ];
+  const sample = {
+    name: '衣索比亞 耶加雪菲 歌姬 沃卡 日曬 G1 (展示範例)',
+    roaster: 'The Barn Coffee Roasters',
+    origin: 'Ethiopia (衣索比亞)',
+    region: 'Gedeb, Yirgacheffe',
+    farmOrStation: 'Worka Sakaro Washing Station',
+    varietal: 'Heirloom (原生種)',
+    process: 'Natural' as ProcessMethod,
+    roastLevel: 'Light' as RoastLevel,
+    elevationMeters: '2000-2200m',
+    tastingNotes: ['藍莓果醬', '草莓 Strawberry', '紫羅蘭 Violet', '蜂蜜 Honey'],
+    totalWeightGrams: 250,
+    remainingWeightGrams: 250,
+    notes: '建議研磨度偏細，水溫 92°C 展現明亮莓果花香與甜感餘韻。',
+    rawDetectedText: 'ETHIOPIA WORKA SAKARO / NATURAL / HEIRLOOM / FLAVORS: BLUEBERRY, VIOLET, HONEY',
+  };
 
-  const selected = sampleVarieties[Math.floor(Math.random() * sampleVarieties.length)];
-
-  // Default roast date ~10 days ago
   const dateObj = new Date();
   dateObj.setDate(dateObj.getDate() - 10);
   const roastDate = dateObj.toISOString().slice(0, 10);
 
   return {
-    ...selected,
+    ...sample,
     roastDate,
-    remainingWeightGrams: selected.totalWeightGrams,
-    tastingNotes: normalizeFlavorNotes(selected.tastingNotes),
-    confidenceScore: 0.92,
+    tastingNotes: normalizeFlavorNotes(sample.tastingNotes),
+    confidenceScore: 0.85,
   };
 }
