@@ -24,6 +24,8 @@ export const BeanModal: React.FC = () => {
   const [tastingNotes, setTastingNotes] = useState<string[]>([]);
   const [totalWeightGrams, setTotalWeightGrams] = useState(200);
   const [remainingWeightGrams, setRemainingWeightGrams] = useState(200);
+  const [price, setPrice] = useState<number | ''>('');
+  const [currency, setCurrency] = useState<string>('TWD');
   const [elevationMeters, setElevationMeters] = useState('');
   const [status, setStatus] = useState<BeanStatus>('active');
   const [notes, setNotes] = useState('');
@@ -48,6 +50,8 @@ export const BeanModal: React.FC = () => {
         setTastingNotes(bean.tastingNotesPackage || []);
         setTotalWeightGrams(bean.totalWeightGrams);
         setRemainingWeightGrams(bean.remainingWeightGrams);
+        setPrice(bean.price !== undefined ? bean.price : '');
+        setCurrency(bean.currency || 'TWD');
         setElevationMeters(bean.elevationMeters || '');
         setStatus(bean.status);
         setNotes(bean.notes || '');
@@ -66,6 +70,8 @@ export const BeanModal: React.FC = () => {
       setTastingNotes([]);
       setTotalWeightGrams(200);
       setRemainingWeightGrams(200);
+      setPrice('');
+      setCurrency('TWD');
       setElevationMeters('');
       setStatus('active');
       setNotes('');
@@ -117,6 +123,8 @@ export const BeanModal: React.FC = () => {
         tastingNotesPackage: tastingNotes,
         totalWeightGrams,
         remainingWeightGrams,
+        price: price !== '' ? Number(price) : undefined,
+        currency,
         elevationMeters,
         status,
         notes,
@@ -135,6 +143,8 @@ export const BeanModal: React.FC = () => {
         tastingNotesPackage: tastingNotes,
         totalWeightGrams,
         remainingWeightGrams,
+        price: price !== '' ? Number(price) : undefined,
+        currency,
         elevationMeters,
         status,
         notes,
@@ -396,11 +406,11 @@ export const BeanModal: React.FC = () => {
               />
             </div>
 
-            {/* Weights & Status */}
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+            {/* Weights, Price & Status */}
+            <div className="grid grid-cols-1 sm:grid-cols-4 gap-3">
               <div>
                 <label className="block text-xs font-semibold text-stone-300 mb-1">
-                  {language === 'zh-TW' ? '總包裝克重 (Total g)' : 'Total Weight (g)'}
+                  {language === 'zh-TW' ? '總克重 (Total g)' : 'Total (g)'}
                 </label>
                 <input
                   type="number"
@@ -416,7 +426,7 @@ export const BeanModal: React.FC = () => {
 
               <div>
                 <label className="block text-xs font-semibold text-stone-300 mb-1">
-                  {language === 'zh-TW' ? '目前剩餘克重 (Remaining g)' : 'Remaining Weight (g)'}
+                  {language === 'zh-TW' ? '剩餘克重 (Rem. g)' : 'Remaining (g)'}
                 </label>
                 <input
                   type="number"
@@ -424,6 +434,39 @@ export const BeanModal: React.FC = () => {
                   onChange={(e) => setRemainingWeightGrams(parseFloat(e.target.value) || 0)}
                   className="w-full bg-stone-950 text-stone-100 font-mono text-xs px-3 py-2 rounded-xl border border-stone-800 focus:border-amber-500 focus:outline-none"
                 />
+              </div>
+
+              <div>
+                <div className="flex items-center justify-between mb-1">
+                  <label className="block text-xs font-semibold text-stone-300">
+                    {language === 'zh-TW' ? '購買價格 (Price)' : 'Price'}
+                  </label>
+                  {price && totalWeightGrams > 0 && (
+                    <span className="text-[10px] text-amber-400 font-mono">
+                      ≈ {currency} {((Number(price) / totalWeightGrams) * 15).toFixed(1)}/杯
+                    </span>
+                  )}
+                </div>
+                <div className="flex gap-1.5">
+                  <select
+                    value={currency}
+                    onChange={(e) => setCurrency(e.target.value)}
+                    className="bg-stone-950 text-stone-300 text-xs px-2 py-2 rounded-xl border border-stone-800 focus:border-amber-500 focus:outline-none"
+                  >
+                    <option value="TWD">NT$</option>
+                    <option value="USD">USD $</option>
+                    <option value="EUR">EUR €</option>
+                    <option value="JPY">JPY ¥</option>
+                    <option value="HKD">HK$</option>
+                  </select>
+                  <input
+                    type="number"
+                    placeholder="e.g. 450"
+                    value={price}
+                    onChange={(e) => setPrice(e.target.value === '' ? '' : parseFloat(e.target.value) || 0)}
+                    className="flex-1 bg-stone-950 text-stone-100 font-mono text-xs px-3 py-2 rounded-xl border border-stone-800 focus:border-amber-500 focus:outline-none"
+                  />
+                </div>
               </div>
 
               <div>
