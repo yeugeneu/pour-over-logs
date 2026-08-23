@@ -23,6 +23,7 @@ export interface ExtractedBeanMetadata {
   remainingWeightGrams: number;
   notes?: string;
   rawDetectedText?: string;
+  photoCount?: number;
   isMockDemo?: boolean;
   confidenceScore?: number;
 }
@@ -51,11 +52,16 @@ export function saveGeminiApiKey(key: string): void {
 }
 
 /**
- * Scans and extracts structured specialty coffee metadata from an image base64 string.
+ * Scans and extracts structured specialty coffee metadata from one or multiple packaging images.
  */
 export async function scanBeanBagWithAI(
-  base64DataUrl: string
+  images: string | string[]
 ): Promise<ExtractedBeanMetadata> {
+  const imageList = Array.isArray(images) ? images : [images];
+  if (imageList.length === 0) {
+    throw new Error('請至少提供一張咖啡包裝照片');
+  }
+
   const apiKey = getGeminiApiKey();
 
   if (!apiKey) {
@@ -63,26 +69,23 @@ export async function scanBeanBagWithAI(
     const demo = await mockHeuristicScan();
     return {
       ...demo,
+      photoCount: imageList.length,
       isMockDemo: true,
     };
   }
 
-  // Call Gemini Vision API directly
-  return await callGeminiVision(base64DataUrl, apiKey);
+  // Call Gemini Vision API directly with multi-image support
+  return await callGeminiVision(imageList, apiKey);
 }
 
 /**
- * Calls Google Gemini Flash Multimodal Vision API directly.
+ * Calls Google Gemini Flash Multimodal Vision API directly with multi-image support.
  * Prioritizes gemini-3.6-flash, with automatic fallback if model name varies.
  */
 async function callGeminiVision(
-  base64DataUrl: string,
+  images: string[],
   apiKey: string
 ): Promise<ExtractedBeanMetadata> {
-  const parts = base64DataUrl.split(',');
-  const mimeType = parts[0]?.match(/:(.*?);/)?.[1] || 'image/jpeg';
-  const base64Data = parts[1] || base64DataUrl;
-
   // List of models to try in priority order
   const candidateModels = [
     'gemini-3.6-flash',
@@ -93,10 +96,12 @@ async function callGeminiVision(
 
   const prompt = `
 You are an expert World Barista Championship sensory judge, Q-Grader, and OCR specialist for specialty coffee packaging.
-Examine this coffee packaging / label photo with extreme precision. Extract all visible specialty coffee metadata into structured JSON.
+You are given ${images.length} photo(s) of different sides/angles of the same specialty coffee packaging (e.g. front title label, back detail card, side notes, roast date stamp/sticker, bottom weight).
+
+Carefully inspect ALL provided photos, cross-reference and synthesize all text across all sides into a single consolidated, highly accurate JSON record.
 
 Follow these strict extraction guidelines:
-1. "name": The primary title / single-origin coffee name printed on the label (e.g. "衣索比亞 耶加雪菲 沃卡 日曬 G1", "Panama Geisha Washed", "Colombia El Paraiso"). If multiple lines exist, combine origin + processing + grade.
+1. "name": The primary title / single-origin coffee name (e.g. "衣索比亞 耶加雪菲 歌姬 沃卡 日曬 G1", "Panama Geisha Washed", "Colombia El Paraiso"). Combine origin + processing + grade if on separate lines.
 2. "roaster": The roastery, brand, or cafe name printed (e.g. "Simple Kaffa 興波咖啡", "The Barn", "Coffee Collective", "Oasis Coffee", "Blue Bottle", "自烘焙").
 3. "origin": Country of origin (e.g. "Ethiopia", "Panama", "Colombia", "Kenya", "Guatemala", "Costa Rica", "Taiwan", "Indonesia", "Brazil").
 4. "region": Sub-region, county, or growing area (e.g. "Yirgacheffe", "Boquete", "Huila", "Nyeri", "Alishan", "Tarrazu", "Antigua").
@@ -104,11 +109,11 @@ Follow these strict extraction guidelines:
 6. "varietal": Botanical cultivar (e.g. "Geisha", "Pink Bourbon", "SL28 / SL34", "Heirloom 原生種", "Typica", "Caturra", "Bourbon", "Castillo", "Sidra", "Pacamara").
 7. "process": Processing method (e.g. "Washed 水洗", "Natural 日曬", "Honey 蜜處理", "Anaerobic 厭氧", "Thermal Shock 熱衝擊", "Carbonic Maceration 二氧化碳浸漬").
 8. "roastLevel": Roast degree (e.g. "Light 淺焙", "Light-Medium 淺中", "Medium 中焙", "Medium-Dark 中深", "Dark 深焙"). If not explicitly printed, infer from specialty origin or leave "Light".
-9. "roastDate": Look carefully for stamped dates, printed dates, best-before dates, or handwritten dates. Convert to YYYY-MM-DD format. If only month/day or relative days are visible, compute best estimate.
+9. "roastDate": Look carefully across all photos (especially stickers and back labels) for stamped dates, printed dates, best-before dates, or handwritten dates. Convert to YYYY-MM-DD format. If only month/day or relative days are visible, compute best estimate.
 10. "elevation": Elevation / Altitude (e.g. "1900-2100m", "1650m", "2000 MASL").
-11. "tastingNotes": Array of all flavor descriptors printed on the bag (e.g. ["Jasmine", "Bergamot", "Peach", "Earl Grey", "Blueberry", "Honey", "Cacao"]).
+11. "tastingNotes": Array of all flavor descriptors printed across the package (e.g. ["Jasmine", "Bergamot", "Peach", "Earl Grey", "Blueberry", "Honey", "Cacao"]).
 12. "totalWeightGrams": Package weight in grams (e.g. 200, 227, 250, 100, 454).
-13. "rawDetectedText": A brief transcription of the key lines of text detected on the package.
+13. "rawDetectedText": A brief transcription of key text detected across all photos.
 
 Return ONLY a single valid JSON object matching this schema (NO markdown formatting, NO backticks):
 {
@@ -129,17 +134,25 @@ Return ONLY a single valid JSON object matching this schema (NO markdown formatt
 }
 `;
 
+  // Build image parts for all supplied photos
+  const imageParts = images.map((imgStr) => {
+    const parts = imgStr.split(',');
+    const mimeType = parts[0]?.match(/:(.*?);/)?.[1] || 'image/jpeg';
+    const base64Data = parts[1] || imgStr;
+    return {
+      inline_data: {
+        mime_type: mimeType,
+        data: base64Data,
+      },
+    };
+  });
+
   const body = {
     contents: [
       {
         parts: [
           { text: prompt },
-          {
-            inline_data: {
-              mime_type: mimeType,
-              data: base64Data,
-            },
-          },
+          ...imageParts,
         ],
       },
     ],
@@ -171,7 +184,6 @@ Return ONLY a single valid JSON object matching this schema (NO markdown formatt
           }
         } catch {}
 
-        // If 404 model not found, try next candidate model
         if (response.status === 404) {
           lastError = new Error(`Model ${modelName} not found: ${parsedMsg}`);
           continue;
@@ -209,6 +221,7 @@ Return ONLY a single valid JSON object matching this schema (NO markdown formatt
         remainingWeightGrams: weight,
         notes: parsed.notes || undefined,
         rawDetectedText: parsed.rawDetectedText || undefined,
+        photoCount: images.length,
         isMockDemo: false,
         confidenceScore: 0.98,
       };

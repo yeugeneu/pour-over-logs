@@ -21,7 +21,17 @@ import {
   Tag,
   AlertCircle,
   FileText,
+  Plus,
+  Trash2,
+  Layers,
 } from 'lucide-react';
+
+interface CapturedPhotoItem {
+  id: string;
+  base64: string;
+  origSize: number;
+  compSize: number;
+}
 
 interface BeanScannerModalProps {
   isOpen: boolean;
@@ -37,8 +47,7 @@ export const BeanScannerModal: React.FC<BeanScannerModalProps> = ({
   const { language, t } = useI18n();
 
   const [step, setStep] = useState<'upload' | 'analyzing' | 'review'>('upload');
-  const [capturedImageBase64, setCapturedImageBase64] = useState<string | null>(null);
-  const [imageStats, setImageStats] = useState<{ origSize: number; compSize: number } | null>(null);
+  const [photoList, setPhotoList] = useState<CapturedPhotoItem[]>([]);
   const [extractedData, setExtractedData] = useState<ExtractedBeanMetadata | null>(null);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
 
@@ -52,9 +61,56 @@ export const BeanScannerModal: React.FC<BeanScannerModalProps> = ({
 
   if (!isOpen) return null;
 
-  const handleProcessFile = async (file: File) => {
-    if (!file.type.startsWith('image/')) {
-      setErrorMsg('請選擇圖片檔案 (JPG / PNG / WebP)');
+  const handleAddPhotos = async (files: FileList | File[]) => {
+    const validFiles = Array.from(files).filter((f) => f.type.startsWith('image/'));
+    if (validFiles.length === 0) {
+      setErrorMsg('請選擇有效的圖片檔案 (JPG / PNG / WebP)');
+      return;
+    }
+
+    try {
+      setErrorMsg(null);
+      const newItems: CapturedPhotoItem[] = [];
+
+      for (const file of validFiles) {
+        if (photoList.length + newItems.length >= 6) {
+          setErrorMsg('最多可同時拍攝或上傳 6 張照片');
+          break;
+        }
+
+        const compressed = await compressImage(file, 1280, 0.85);
+        newItems.push({
+          id: `photo-${Date.now()}-${Math.random().toString(36).substring(2, 6)}`,
+          base64: compressed.base64,
+          origSize: compressed.originalSizeBytes,
+          compSize: compressed.compressedSizeBytes,
+        });
+      }
+
+      setPhotoList((prev) => [...prev, ...newItems]);
+    } catch (err: any) {
+      console.error('Compression error:', err);
+      setErrorMsg(err.message || '圖片壓縮處理失敗');
+    }
+  };
+
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files) handleAddPhotos(e.target.files);
+    e.target.value = '';
+  };
+
+  const handleDrop = (e: React.DragEvent) => {
+    e.preventDefault();
+    if (e.dataTransfer.files) handleAddPhotos(e.dataTransfer.files);
+  };
+
+  const handleRemovePhoto = (id: string) => {
+    setPhotoList((prev) => prev.filter((p) => p.id !== id));
+  };
+
+  const handleStartAnalysis = async () => {
+    if (photoList.length === 0) {
+      setErrorMsg('請至少拍攝或上傳一張咖啡包裝照片');
       return;
     }
 
@@ -62,16 +118,8 @@ export const BeanScannerModal: React.FC<BeanScannerModalProps> = ({
       setErrorMsg(null);
       setStep('analyzing');
 
-      // 1. Compress image on client
-      const compressed = await compressImage(file, 1280, 0.85);
-      setCapturedImageBase64(compressed.base64);
-      setImageStats({
-        origSize: compressed.originalSizeBytes,
-        compSize: compressed.compressedSizeBytes,
-      });
-
-      // 2. Send to AI Multimodal Vision API
-      const result = await scanBeanBagWithAI(compressed.base64);
+      const images = photoList.map((p) => p.base64);
+      const result = await scanBeanBagWithAI(images);
       setExtractedData(result);
       setStep('review');
     } catch (err: any) {
@@ -79,17 +127,6 @@ export const BeanScannerModal: React.FC<BeanScannerModalProps> = ({
       setErrorMsg(err.message || t.scanner.scanError);
       setStep('upload');
     }
-  };
-
-  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (file) handleProcessFile(file);
-  };
-
-  const handleDrop = (e: React.DragEvent) => {
-    e.preventDefault();
-    const file = e.dataTransfer.files?.[0];
-    if (file) handleProcessFile(file);
   };
 
   const handleApply = () => {
@@ -102,8 +139,7 @@ export const BeanScannerModal: React.FC<BeanScannerModalProps> = ({
 
   const handleReset = () => {
     setStep('upload');
-    setCapturedImageBase64(null);
-    setImageStats(null);
+    setPhotoList([]);
     setExtractedData(null);
     setErrorMsg(null);
   };
@@ -137,11 +173,11 @@ export const BeanScannerModal: React.FC<BeanScannerModalProps> = ({
                 </h3>
                 <span className="text-[10px] px-2 py-0.5 rounded-full bg-gradient-to-r from-amber-500/20 to-orange-500/20 text-amber-300 border border-amber-500/30 flex items-center gap-1">
                   <Sparkles className="w-3 h-3 text-amber-400" />
-                  <span>Gemini 3.6 Flash</span>
+                  <span>Gemini 3.6 Flash • 多角度合成</span>
                 </span>
               </div>
               <p className="text-xs text-stone-400 line-clamp-1">
-                {t.scanner.scanSubtitle}
+                支援同時拍攝正面、背面風味卡與烘焙日標籤，AI 將自動交叉比對整合
               </p>
             </div>
           </div>
@@ -168,18 +204,18 @@ export const BeanScannerModal: React.FC<BeanScannerModalProps> = ({
           </div>
         </div>
 
-        {/* Missing API Key Warning / Configuration Banner */}
+        {/* Missing API Key Warning Banner */}
         {!isKeyConfigured && !showKeyConfig && (
           <div className="p-3 bg-amber-500/10 border-b border-amber-500/20 flex items-center justify-between text-xs text-amber-300">
             <div className="flex items-center gap-2">
               <Key className="w-4 h-4 text-amber-400 shrink-0" />
-              <span>未設定 Gemini API Key（目前使用範例模式）。若要辨識真實包裝，請輸入免費 API Key。</span>
+              <span>未設定 Gemini API Key（目前使用範例模式）。點擊此處輸入免費 API Key 開啟真實辨識。</span>
             </div>
             <button
               onClick={() => setShowKeyConfig(true)}
               className="px-2.5 py-1 bg-amber-500 hover:bg-amber-400 text-stone-950 font-bold rounded-lg shrink-0 ml-2"
             >
-              立即設定
+              設定 Key
             </button>
           </div>
         )}
@@ -220,7 +256,7 @@ export const BeanScannerModal: React.FC<BeanScannerModalProps> = ({
               {keySavedBanner && (
                 <div className="text-emerald-400 text-[11px] flex items-center gap-1">
                   <Check className="w-3.5 h-3.5" />
-                  <span>{language === 'zh-TW' ? '已成功保存 Gemini API Key！已開啟真實 AI 視覺辨識' : 'API Key saved! Real-time vision scanning enabled.'}</span>
+                  <span>已成功保存 Gemini API Key！已啟用真實多照片視覺分析</span>
                 </div>
               )}
             </form>
@@ -236,53 +272,122 @@ export const BeanScannerModal: React.FC<BeanScannerModalProps> = ({
             </div>
           )}
 
-          {/* STEP 1: UPLOAD / CAMERA TRIGGER */}
+          {/* STEP 1: MULTI-PHOTO UPLOAD & GALLERY */}
           {step === 'upload' && (
             <div className="space-y-4">
-              {/* Drag and Drop Zone */}
-              <div
-                onDragOver={(e) => e.preventDefault()}
-                onDrop={handleDrop}
-                onClick={() => fileInputRef.current?.click()}
-                className="border-2 border-dashed border-stone-700 hover:border-amber-500/60 rounded-3xl p-8 text-center cursor-pointer bg-stone-950/40 hover:bg-amber-500/5 transition group space-y-3"
-              >
-                <div className="w-16 h-16 rounded-2xl bg-stone-900 border border-stone-800 group-hover:border-amber-500/40 flex items-center justify-center mx-auto text-stone-400 group-hover:text-amber-400 transition shadow-inner">
-                  <Camera className="w-8 h-8" />
-                </div>
-                <div>
-                  <h4 className="font-bold text-sm text-stone-200 group-hover:text-amber-300 transition">
-                    {t.scanner.dragDropText}
-                  </h4>
-                  <p className="text-xs text-stone-500 mt-1">
-                    支援咖啡豆包裝袋正面、背面產區風味卡或標籤貼紙 (JPG, PNG, WebP)
-                  </p>
-                </div>
-              </div>
+              {/* Photo Gallery Grid */}
+              {photoList.length > 0 ? (
+                <div className="space-y-3">
+                  <div className="flex items-center justify-between text-xs text-stone-400">
+                    <span className="font-semibold text-stone-300 flex items-center gap-1.5">
+                      <Layers className="w-4 h-4 text-amber-500" />
+                      <span>已拍攝包裝照片 ({photoList.length}/6 張)</span>
+                    </span>
+                    <span>可再拍攝背面風味卡或日期貼紙</span>
+                  </div>
 
-              {/* Action Buttons (Native Mobile Camera & File Select) */}
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                {/* Native Camera Trigger for Phones */}
-                <button
-                  type="button"
-                  onClick={() => cameraInputRef.current?.click()}
-                  className="py-3 px-4 rounded-2xl bg-gradient-to-r from-amber-600 to-amber-500 hover:from-amber-500 hover:to-amber-400 text-white font-bold text-xs sm:text-sm shadow-lg shadow-amber-900/30 transition flex items-center justify-center space-x-2"
-                >
-                  <Camera className="w-4 h-4" />
-                  <span>{t.scanner.takePhoto} (相機拍照)</span>
-                </button>
+                  <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+                    {photoList.map((photo, index) => (
+                      <div
+                        key={photo.id}
+                        className="relative aspect-square rounded-2xl overflow-hidden border border-stone-700 bg-stone-950 group shadow-md"
+                      >
+                        <img
+                          src={photo.base64}
+                          alt={`Angle ${index + 1}`}
+                          className="w-full h-full object-cover"
+                        />
+                        <div className="absolute top-1.5 left-1.5 px-2 py-0.5 rounded-md bg-stone-950/80 backdrop-blur-sm text-[10px] text-amber-300 font-bold border border-stone-800">
+                          #{index + 1} {index === 0 ? '正面' : index === 1 ? '背面' : '局部'}
+                        </div>
+                        <button
+                          type="button"
+                          onClick={() => handleRemovePhoto(photo.id)}
+                          className="absolute top-1.5 right-1.5 p-1.5 rounded-lg bg-rose-900/80 hover:bg-rose-800 text-white transition shadow-sm"
+                          title="刪除照片"
+                        >
+                          <Trash2 className="w-3.5 h-3.5" />
+                        </button>
+                        <div className="absolute bottom-1.5 left-1.5 right-1.5 px-1.5 py-0.5 rounded-md bg-stone-950/80 text-[9px] text-stone-400 font-mono text-center">
+                          {formatKB(photo.compSize)}
+                        </div>
+                      </div>
+                    ))}
 
-                {/* Photo Library Picker */}
-                <button
-                  type="button"
+                    {/* Add Photo Tile Button */}
+                    {photoList.length < 6 && (
+                      <button
+                        type="button"
+                        onClick={() => cameraInputRef.current?.click()}
+                        className="aspect-square rounded-2xl border-2 border-dashed border-stone-700 hover:border-amber-500/60 bg-stone-950/30 hover:bg-amber-500/5 transition flex flex-col items-center justify-center p-3 text-stone-400 hover:text-amber-300 group"
+                      >
+                        <Plus className="w-6 h-6 text-stone-500 group-hover:text-amber-400 mb-1" />
+                        <span className="text-[11px] font-semibold">加拍下一面</span>
+                        <span className="text-[9px] text-stone-500">(背面/日期)</span>
+                      </button>
+                    )}
+                  </div>
+                </div>
+              ) : (
+                /* Empty Drag & Drop Hero Box */
+                <div
+                  onDragOver={(e) => e.preventDefault()}
+                  onDrop={handleDrop}
                   onClick={() => fileInputRef.current?.click()}
-                  className="py-3 px-4 rounded-2xl bg-stone-800 hover:bg-stone-700 text-stone-200 font-bold text-xs sm:text-sm border border-stone-700 transition flex items-center justify-center space-x-2"
+                  className="border-2 border-dashed border-stone-700 hover:border-amber-500/60 rounded-3xl p-8 text-center cursor-pointer bg-stone-950/40 hover:bg-amber-500/5 transition group space-y-3"
                 >
-                  <Upload className="w-4 h-4 text-stone-400" />
-                  <span>{t.scanner.uploadPhoto} (相簿圖片)</span>
-                </button>
+                  <div className="w-16 h-16 rounded-2xl bg-stone-900 border border-stone-800 group-hover:border-amber-500/40 flex items-center justify-center mx-auto text-stone-400 group-hover:text-amber-400 transition shadow-inner">
+                    <Camera className="w-8 h-8" />
+                  </div>
+                  <div>
+                    <h4 className="font-bold text-sm text-stone-200 group-hover:text-amber-300 transition">
+                      {t.scanner.dragDropText}
+                    </h4>
+                    <p className="text-xs text-stone-500 mt-1">
+                      可連續拍攝多個面（正面品名、背面風味卡、側邊/底座烘焙日期貼紙）
+                    </p>
+                  </div>
+                </div>
+              )}
+
+              {/* Action Buttons */}
+              <div className="space-y-2.5 pt-1">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  {/* Camera Snap Button */}
+                  <button
+                    type="button"
+                    onClick={() => cameraInputRef.current?.click()}
+                    className="py-3 px-4 rounded-2xl bg-stone-800 hover:bg-stone-700 text-stone-200 font-bold text-xs sm:text-sm border border-stone-700 transition flex items-center justify-center space-x-2 shadow-sm"
+                  >
+                    <Camera className="w-4 h-4 text-amber-400" />
+                    <span>{photoList.length > 0 ? '+ 拍下一張 (相機拍照)' : '拍攝包裝袋 (相機拍照)'}</span>
+                  </button>
+
+                  {/* Album Picker */}
+                  <button
+                    type="button"
+                    onClick={() => fileInputRef.current?.click()}
+                    className="py-3 px-4 rounded-2xl bg-stone-800 hover:bg-stone-700 text-stone-200 font-bold text-xs sm:text-sm border border-stone-700 transition flex items-center justify-center space-x-2"
+                  >
+                    <Upload className="w-4 h-4 text-stone-400" />
+                    <span>從相簿選擇圖片 (可複選)</span>
+                  </button>
+                </div>
+
+                {/* Big Primary Start AI Analysis Button (Active when at least 1 photo taken) */}
+                {photoList.length > 0 && (
+                  <button
+                    type="button"
+                    onClick={handleStartAnalysis}
+                    className="w-full py-3.5 px-4 rounded-2xl bg-gradient-to-r from-amber-600 via-amber-500 to-amber-600 hover:from-amber-500 hover:to-amber-400 text-white font-bold text-sm shadow-xl shadow-amber-900/30 transition flex items-center justify-center space-x-2 transform active:scale-[0.99] animate-fade-in"
+                  >
+                    <Sparkles className="w-4 h-4" />
+                    <span>🚀 開始 AI 多角度辨識 ({photoList.length} 張照片合成分析)</span>
+                  </button>
+                )}
               </div>
 
-              {/* Hidden File Inputs */}
+              {/* Hidden Inputs */}
               <input
                 ref={cameraInputRef}
                 type="file"
@@ -295,6 +400,7 @@ export const BeanScannerModal: React.FC<BeanScannerModalProps> = ({
                 ref={fileInputRef}
                 type="file"
                 accept="image/*"
+                multiple
                 onChange={handleFileChange}
                 className="hidden"
               />
@@ -313,22 +419,20 @@ export const BeanScannerModal: React.FC<BeanScannerModalProps> = ({
 
               <div className="space-y-1.5">
                 <h4 className="font-bold text-base text-stone-100">
-                  {t.scanner.analyzing}
+                  Gemini 3.6 正在交叉比對 {photoList.length} 張包裝照片...
                 </h4>
                 <p className="text-xs text-stone-400">
-                  {t.scanner.analyzingHint}
+                  正在跨照片綜合解析品名、產區履歷、處理法、烘焙日期與風味筆記...
                 </p>
               </div>
 
-              {imageStats && (
-                <div className="inline-flex items-center space-x-2 px-3 py-1 rounded-full bg-stone-950 border border-stone-800 text-[11px] text-stone-400 font-mono">
-                  <span>原始: {formatKB(imageStats.origSize)}</span>
-                  <span>→</span>
-                  <span className="text-emerald-400 font-semibold">
-                    壓縮優化: {formatKB(imageStats.compSize)}
-                  </span>
-                </div>
-              )}
+              <div className="flex justify-center gap-2">
+                {photoList.map((p, idx) => (
+                  <div key={p.id} className="w-10 h-10 rounded-lg overflow-hidden border border-stone-700 bg-stone-950 opacity-80">
+                    <img src={p.base64} alt={`Thumb ${idx}`} className="w-full h-full object-cover" />
+                  </div>
+                ))}
+              </div>
             </div>
           )}
 
@@ -340,7 +444,7 @@ export const BeanScannerModal: React.FC<BeanScannerModalProps> = ({
                 <div className="p-3 bg-amber-500/15 border border-amber-500/30 rounded-2xl text-xs text-amber-200 flex items-center justify-between">
                   <div className="flex items-center gap-2">
                     <AlertCircle className="w-4 h-4 text-amber-400 shrink-0" />
-                    <span>當前為<b>離線展示資料</b>（因未輸入 API Key）。若要辨識您的真實咖啡袋，請點擊右上角 🔑 輸入免費 Gemini API Key。</span>
+                    <span>當前為<b>離線展示資料</b>（因未輸入 API Key）。若要辨識真實咖啡袋，請點擊右上角 🔑 輸入免費 Gemini API Key。</span>
                   </div>
                   <button
                     onClick={() => setShowKeyConfig(true)}
@@ -356,47 +460,52 @@ export const BeanScannerModal: React.FC<BeanScannerModalProps> = ({
                   <Sparkles className="w-4 h-4 text-amber-400" />
                   <span>{t.scanner.reviewTitle}</span>
                 </h4>
-                <span className={`text-[11px] font-mono font-semibold px-2 py-0.5 rounded-full border ${
+                <span className={`text-[11px] font-mono font-semibold px-2.5 py-0.5 rounded-full border ${
                   extractedData.isMockDemo
                     ? 'bg-amber-500/10 text-amber-300 border-amber-500/30'
                     : 'bg-emerald-500/10 text-emerald-400 border-emerald-500/30'
                 }`}>
-                  {extractedData.isMockDemo ? '展示模式 Demo' : `AI 辨識信心度 ${Math.round((extractedData.confidenceScore || 0.95) * 100)}%`}
+                  {extractedData.isMockDemo ? '展示模式 Demo' : `AI 綜合信心度 ${Math.round((extractedData.confidenceScore || 0.95) * 100)}% (${extractedData.photoCount || photoList.length} 張)`}
                 </span>
               </div>
 
               <div className="grid grid-cols-1 md:grid-cols-12 gap-4">
-                {/* Photo Thumbnail */}
-                {capturedImageBase64 && (
-                  <div className="md:col-span-4 flex flex-col items-center space-y-2">
-                    <div className="w-full aspect-square rounded-2xl overflow-hidden border border-stone-800 bg-stone-950 relative shadow-md">
-                      <img
-                        src={capturedImageBase64}
-                        alt="Coffee bag capture"
-                        className="w-full h-full object-cover"
-                      />
-                      <div className="absolute bottom-2 left-2 right-2 px-2 py-1 rounded-lg bg-stone-950/80 backdrop-blur-sm text-[10px] text-stone-300 font-mono text-center border border-stone-800">
-                        📸 {imageStats ? formatKB(imageStats.compSize) : 'Captured'}
-                      </div>
-                    </div>
-
-                    {/* Raw OCR Text snippet if available */}
-                    {extractedData.rawDetectedText && (
-                      <div className="w-full p-2.5 rounded-xl bg-stone-950 border border-stone-800 text-[10px] text-stone-400 font-mono space-y-1">
-                        <div className="flex items-center gap-1 text-stone-300 font-bold">
-                          <FileText className="w-3 h-3 text-amber-500" />
-                          <span>辨識到的文字：</span>
+                {/* Photo Thumbnails Carousel */}
+                <div className="md:col-span-4 space-y-2">
+                  <div className="grid grid-cols-2 gap-1.5">
+                    {photoList.map((photo, index) => (
+                      <div
+                        key={photo.id}
+                        className="aspect-square rounded-xl overflow-hidden border border-stone-800 bg-stone-950 relative shadow-sm"
+                      >
+                        <img
+                          src={photo.base64}
+                          alt={`Analyzed ${index + 1}`}
+                          className="w-full h-full object-cover"
+                        />
+                        <div className="absolute bottom-1 left-1 px-1.5 py-0.2 rounded bg-stone-950/80 text-[9px] text-amber-300 font-bold">
+                          #{index + 1}
                         </div>
-                        <p className="line-clamp-3 text-stone-400">
-                          {extractedData.rawDetectedText}
-                        </p>
                       </div>
-                    )}
+                    ))}
                   </div>
-                )}
+
+                  {/* Raw OCR Text snippet if available */}
+                  {extractedData.rawDetectedText && (
+                    <div className="p-2.5 rounded-xl bg-stone-950 border border-stone-800 text-[10px] text-stone-400 font-mono space-y-1">
+                      <div className="flex items-center gap-1 text-stone-300 font-bold">
+                        <FileText className="w-3 h-3 text-amber-500" />
+                        <span>跨照片文字辨識：</span>
+                      </div>
+                      <p className="line-clamp-3 text-stone-400">
+                        {extractedData.rawDetectedText}
+                      </p>
+                    </div>
+                  )}
+                </div>
 
                 {/* Parsed Fields Cards */}
-                <div className={`space-y-2.5 ${capturedImageBase64 ? 'md:col-span-8' : 'md:col-span-12'}`}>
+                <div className="md:col-span-8 space-y-2.5">
                   {/* Bean Name */}
                   <div className="p-3 rounded-xl bg-stone-950/70 border border-stone-800/80">
                     <div className="text-[10px] uppercase font-bold text-amber-400 tracking-wider">
