@@ -454,10 +454,14 @@ export const BeanModal: React.FC = () => {
                     className="bg-stone-950 text-stone-300 text-xs px-2 py-2 rounded-xl border border-stone-800 focus:border-amber-500 focus:outline-none"
                   >
                     <option value="TWD">NT$</option>
+                    <option value="CAD">CAD $</option>
                     <option value="USD">USD $</option>
                     <option value="EUR">EUR €</option>
+                    <option value="GBP">GBP £</option>
                     <option value="JPY">JPY ¥</option>
                     <option value="HKD">HK$</option>
+                    <option value="AUD">AUD $</option>
+                    <option value="SGD">SGD $</option>
                   </select>
                   <input
                     type="number"
