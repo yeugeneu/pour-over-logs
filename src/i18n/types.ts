@@ -165,4 +165,23 @@ export interface Translations {
     syncing: string;
     offline: string;
   };
+  scanner: {
+    scanBtn: string;
+    scanTitle: string;
+    scanSubtitle: string;
+    takePhoto: string;
+    uploadPhoto: string;
+    dragDropText: string;
+    analyzing: string;
+    analyzingHint: string;
+    reviewTitle: string;
+    applyBtn: string;
+    retakeBtn: string;
+    apiKeyLabel: string;
+    apiKeyPlaceholder: string;
+    saveApiKey: string;
+    confidenceLabel: string;
+    scanSuccess: string;
+    scanError: string;
+  };
 }
