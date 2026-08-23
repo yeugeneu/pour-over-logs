@@ -123,8 +123,8 @@ export const BeanCard: React.FC<BeanCardProps> = ({ bean }) => {
         </div>
       )}
 
-      {/* Remaining Inventory Bar */}
-      <div className="space-y-1 bg-stone-950/40 p-2.5 rounded-2xl border border-stone-800/60">
+      {/* Remaining Inventory Bar & Price */}
+      <div className="space-y-1.5 bg-stone-950/40 p-2.5 rounded-2xl border border-stone-800/60">
         <div className="flex justify-between items-center text-xs">
           <span className="text-stone-400 flex items-center gap-1">
             <Scale className="w-3 h-3 text-stone-500" />
@@ -145,6 +145,15 @@ export const BeanCard: React.FC<BeanCardProps> = ({ bean }) => {
             style={{ width: `${remainingPercent}%` }}
           />
         </div>
+
+        {bean.price !== undefined && bean.price > 0 && bean.totalWeightGrams > 0 && (
+          <div className="flex justify-between items-center text-[10px] text-stone-400 pt-0.5 font-mono">
+            <span>價格: {bean.currency || 'NT$'} {bean.price}</span>
+            <span className="text-amber-400/90 font-medium">
+              ≈ {bean.currency || 'NT$'} {((bean.price / bean.totalWeightGrams) * 15).toFixed(1)} / 杯 (15g)
+            </span>
+          </div>
+        )}
       </div>
 
       {/* Golden Recipe Card or Dial-in status */}

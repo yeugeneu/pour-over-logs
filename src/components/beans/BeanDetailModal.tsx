@@ -99,7 +99,7 @@ export const BeanDetailModal: React.FC = () => {
         {/* Modal Scroll Body */}
         <div className="p-4 sm:p-6 overflow-y-auto flex-1 space-y-6">
           {/* Metadata Grid */}
-          <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5 bg-stone-950/60 p-4 rounded-2xl border border-stone-800 text-xs">
+          <div className="grid grid-cols-2 sm:grid-cols-5 gap-2.5 bg-stone-950/60 p-4 rounded-2xl border border-stone-800 text-xs">
             <div>
               <span className="text-stone-500 block">{t.beans.process}</span>
               <span className="font-semibold text-stone-200">{bean.process}</span>
@@ -116,6 +116,14 @@ export const BeanDetailModal: React.FC = () => {
               <span className="text-stone-500 block">{t.beans.remaining}</span>
               <span className="font-semibold text-amber-400 font-mono">
                 {bean.remainingWeightGrams}g / {bean.totalWeightGrams}g
+              </span>
+            </div>
+            <div>
+              <span className="text-stone-500 block">價格與單杯成本</span>
+              <span className="font-semibold text-stone-200 font-mono">
+                {bean.price !== undefined && bean.price > 0 && bean.totalWeightGrams > 0
+                  ? `${bean.currency || 'NT$'} ${bean.price} (≈ $${((bean.price / bean.totalWeightGrams) * 15).toFixed(1)}/杯)`
+                  : '未記錄'}
               </span>
             </div>
           </div>

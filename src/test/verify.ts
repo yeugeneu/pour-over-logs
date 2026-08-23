@@ -1,5 +1,17 @@
-import { calculateDaysOffRoast, calculateExtractionYield, calculateRatio, getRestingStageInfo } from '../utils/coffeeMath';
+import {
+  calculateDaysOffRoast,
+  calculateExtractionYield,
+  calculateRatio,
+  getRestingStageInfo,
+} from '../utils/coffeeMath';
 import { diagnoseExtraction } from '../utils/dialinEngine';
+import {
+  normalizeFlavorNotes,
+  normalizeProcessMethod,
+  normalizeRoastDate,
+  normalizeRoastLevel,
+  normalizeWeight,
+} from '../utils/coffeeOntology';
 
 console.log('--- Testing Coffee Math ---');
 const days = calculateDaysOffRoast('2026-08-01', '2026-08-15');
@@ -15,7 +27,6 @@ console.assert(ratio === 15.0, `Expected 15.0 ratio, got ${ratio}`);
 console.log(`✓ calculateRatio: 1:${ratio}`);
 
 const ey = calculateExtractionYield(15, 225, 1.40);
-// Beverage Weight = 225 - (15*2) = 195. EY = (195 * 1.40) / 15 = 18.2%
 console.assert(Math.abs(ey - 18.2) < 0.1, `Expected ~18.2%, got ${ey}`);
 console.log(`✓ calculateExtractionYield: ${ey}%`);
 
@@ -26,7 +37,7 @@ const underDiag = diagnoseExtraction({
   doseGrams: 15,
   waterGrams: 225,
   ratio: 15,
-  totalTimeSeconds: 100, // Very fast
+  totalTimeSeconds: 100,
   waterTempCelsius: 89,
   sensory: {
     acidity: 8.5,
@@ -41,14 +52,13 @@ const underDiag = diagnoseExtraction({
 });
 console.assert(underDiag.state === 'under_extracted', `Expected under_extracted, got ${underDiag.state}`);
 console.log(`✓ Under-extraction diagnosis: ${underDiag.title}`);
-console.log(`  Top suggestion: ${underDiag.recommendations[0]?.action} -> ${underDiag.recommendations[0]?.description}`);
 
 // Test 2: Over-extracted cup (Slow, Bitter, Astringent, High EY)
 const overDiag = diagnoseExtraction({
   doseGrams: 15,
   waterGrams: 240,
   ratio: 16,
-  totalTimeSeconds: 220, // Slow/clogged
+  totalTimeSeconds: 220,
   waterTempCelsius: 95,
   sensory: {
     acidity: 5.5,
@@ -63,9 +73,8 @@ const overDiag = diagnoseExtraction({
 });
 console.assert(overDiag.state === 'over_extracted', `Expected over_extracted, got ${overDiag.state}`);
 console.log(`✓ Over-extraction diagnosis: ${overDiag.title}`);
-console.log(`  Top suggestion: ${overDiag.recommendations[0]?.action} -> ${overDiag.recommendations[0]?.description}`);
 
-// Test 3: Channeling detected (Sharp sourness + bitter astringent dry throat at once)
+// Test 3: Channeling detected
 const channelDiag = diagnoseExtraction({
   doseGrams: 15,
   waterGrams: 225,
@@ -107,4 +116,30 @@ const balancedDiag = diagnoseExtraction({
 console.assert(balancedDiag.state === 'balanced_sweet', `Expected balanced_sweet, got ${balancedDiag.state}`);
 console.log(`✓ Optimal sweet spot diagnosis: ${balancedDiag.title}`);
 
-console.log('\nAll domain math and barista diagnostic engine tests passed successfully! 🎉');
+console.log('\n--- Testing Coffee Ontology & Scanner Normalization ---');
+
+console.assert(normalizeProcessMethod('雙重厭氧熱衝擊處理') === 'Thermal Shock', 'Process match failed');
+console.assert(normalizeProcessMethod('Natural Anaerobic') === 'Anaerobic', 'Process match failed');
+console.assert(normalizeProcessMethod('日曬 G1') === 'Natural', 'Process match failed');
+console.assert(normalizeProcessMethod('Fully Washed') === 'Washed', 'Process match failed');
+console.log('✓ normalizeProcessMethod passed');
+
+console.assert(normalizeRoastLevel('淺中焙 (Light-Medium)') === 'Light-Medium', 'Roast match failed');
+console.assert(normalizeRoastLevel('深焙 Dark') === 'Dark', 'Roast match failed');
+console.assert(normalizeRoastLevel('City') === 'Medium', 'Roast match failed');
+console.log('✓ normalizeRoastLevel passed');
+
+console.assert(normalizeRoastDate('2026/08/15') === '2026-08-15', 'Date match failed');
+console.assert(normalizeRoastDate('115.08.15') === '2026-08-15', 'Minguo date match failed');
+console.log('✓ normalizeRoastDate passed');
+
+console.assert(normalizeWeight('半磅 (227g)') === 227, 'Weight match failed');
+console.assert(normalizeWeight('250 g') === 250, 'Weight match failed');
+console.log('✓ normalizeWeight passed');
+
+const testTags = normalizeFlavorNotes(['茉莉', 'Lemon', '藍莓', 'Custom Yeast']);
+console.assert(testTags.some((t) => t.includes('Jasmine')), 'Flavor tag normalization failed');
+console.assert(testTags.some((t) => t.includes('Lemon')), 'Flavor tag normalization failed');
+console.log(`✓ normalizeFlavorNotes: [${testTags.join(', ')}]`);
+
+console.log('\nAll domain math, barista diagnosis, and AI scanner ontology tests passed successfully! 🎉');
