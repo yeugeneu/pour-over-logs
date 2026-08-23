@@ -22,8 +22,8 @@ export const BeanModal: React.FC = () => {
   const [roastLevel, setRoastLevel] = useState<RoastLevel>('Light');
   const [roastDate, setRoastDate] = useState(new Date().toISOString().slice(0, 10));
   const [tastingNotes, setTastingNotes] = useState<string[]>([]);
-  const [totalWeightGrams, setTotalWeightGrams] = useState(200);
-  const [remainingWeightGrams, setRemainingWeightGrams] = useState(200);
+  const [totalWeightGrams, setTotalWeightGrams] = useState<number | ''>(200);
+  const [remainingWeightGrams, setRemainingWeightGrams] = useState<number | ''>(200);
   const [price, setPrice] = useState<number | ''>('');
   const [currency, setCurrency] = useState<string>('TWD');
   const [elevationMeters, setElevationMeters] = useState('');
@@ -109,6 +109,9 @@ export const BeanModal: React.FC = () => {
     e.preventDefault();
     if (!name.trim() || !roaster.trim()) return;
 
+    const parsedTotal = totalWeightGrams !== '' ? Number(totalWeightGrams) : 200;
+    const parsedRemaining = remainingWeightGrams !== '' ? Number(remainingWeightGrams) : parsedTotal;
+
     if (editingBeanId) {
       updateBean(editingBeanId, {
         name,
@@ -121,8 +124,8 @@ export const BeanModal: React.FC = () => {
         roastLevel,
         roastDate,
         tastingNotesPackage: tastingNotes,
-        totalWeightGrams,
-        remainingWeightGrams,
+        totalWeightGrams: parsedTotal,
+        remainingWeightGrams: parsedRemaining,
         price: price !== '' ? Number(price) : undefined,
         currency,
         elevationMeters,
@@ -141,8 +144,8 @@ export const BeanModal: React.FC = () => {
         roastLevel,
         roastDate,
         tastingNotesPackage: tastingNotes,
-        totalWeightGrams,
-        remainingWeightGrams,
+        totalWeightGrams: parsedTotal,
+        remainingWeightGrams: parsedRemaining,
         price: price !== '' ? Number(price) : undefined,
         currency,
         elevationMeters,
@@ -416,9 +419,10 @@ export const BeanModal: React.FC = () => {
                   type="number"
                   value={totalWeightGrams}
                   onChange={(e) => {
-                    const val = parseFloat(e.target.value) || 0;
-                    setTotalWeightGrams(val);
-                    if (!editingBeanId) setRemainingWeightGrams(val);
+                    const val = e.target.value;
+                    const num = val === '' ? '' : parseFloat(val);
+                    setTotalWeightGrams(num);
+                    if (!editingBeanId) setRemainingWeightGrams(num);
                   }}
                   className="w-full bg-stone-950 text-stone-100 font-mono text-xs px-3 py-2 rounded-xl border border-stone-800 focus:border-amber-500 focus:outline-none"
                 />
@@ -431,7 +435,10 @@ export const BeanModal: React.FC = () => {
                 <input
                   type="number"
                   value={remainingWeightGrams}
-                  onChange={(e) => setRemainingWeightGrams(parseFloat(e.target.value) || 0)}
+                  onChange={(e) => {
+                    const val = e.target.value;
+                    setRemainingWeightGrams(val === '' ? '' : parseFloat(val));
+                  }}
                   className="w-full bg-stone-950 text-stone-100 font-mono text-xs px-3 py-2 rounded-xl border border-stone-800 focus:border-amber-500 focus:outline-none"
                 />
               </div>
@@ -441,9 +448,9 @@ export const BeanModal: React.FC = () => {
                   <label className="block text-xs font-semibold text-stone-300">
                     {language === 'zh-TW' ? '購買價格 (Price)' : 'Price'}
                   </label>
-                  {price && totalWeightGrams > 0 && (
+                  {price !== '' && totalWeightGrams !== '' && Number(totalWeightGrams) > 0 && (
                     <span className="text-[10px] text-amber-400 font-mono">
-                      ≈ {currency} {((Number(price) / totalWeightGrams) * 15).toFixed(1)}/杯
+                      ≈ {currency} {((Number(price) / Number(totalWeightGrams)) * 15).toFixed(1)}/杯
                     </span>
                   )}
                 </div>
@@ -467,7 +474,10 @@ export const BeanModal: React.FC = () => {
                     type="number"
                     placeholder="e.g. 450"
                     value={price}
-                    onChange={(e) => setPrice(e.target.value === '' ? '' : parseFloat(e.target.value) || 0)}
+                    onChange={(e) => {
+                      const val = e.target.value;
+                      setPrice(val === '' ? '' : parseFloat(val));
+                    }}
                     className="flex-1 bg-stone-950 text-stone-100 font-mono text-xs px-3 py-2 rounded-xl border border-stone-800 focus:border-amber-500 focus:outline-none"
                   />
                 </div>

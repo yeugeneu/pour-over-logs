@@ -36,9 +36,9 @@ export const BrewSessionModal: React.FC = () => {
   const [filterPaper, setFilterPaper] = useState<string>('Cafec Abaca');
   const [grinder, setGrinder] = useState<string>('Comandante C40 MK4');
   const [grindSetting, setGrindSetting] = useState<string>('23 clicks');
-  const [doseGrams, setDoseGrams] = useState<number>(15);
-  const [waterGrams, setWaterGrams] = useState<number>(225);
-  const [waterTemp, setWaterTemp] = useState<number>(92);
+  const [doseGrams, setDoseGrams] = useState<number | ''>(15);
+  const [waterGrams, setWaterGrams] = useState<number | ''>(225);
+  const [waterTemp, setWaterTemp] = useState<number | ''>(92);
   const [waterType, setWaterType] = useState<string>('RO Filtered');
   const [selectedPresetId, setSelectedPresetId] = useState<string>('traditional-three-stage');
 
@@ -77,7 +77,7 @@ export const BrewSessionModal: React.FC = () => {
     const preset = RECIPE_PRESETS.find((p) => p.id === presetId);
     if (!preset) return;
 
-    const currentWater = customWater || waterGrams;
+    const currentWater = customWater || (waterGrams !== '' ? Number(waterGrams) : 225);
 
     if (!customWater) setWaterGrams(preset.defaultWaterGrams);
     if (!customDose) setDoseGrams(preset.defaultDoseGrams);
@@ -137,13 +137,17 @@ export const BrewSessionModal: React.FC = () => {
   if (!isBrewModalOpen) return null;
 
   const currentBean = getBeanById(selectedBeanId) || beans[0];
-  const ratio = calculateRatio(doseGrams, waterGrams);
-  const tdsNum = parseFloat(tdsInput);
-  const eyPercent = !isNaN(tdsNum) && tdsNum > 0
-    ? calculateExtractionYield(doseGrams, waterGrams, tdsNum)
-    : undefined;
+  const parsedDose = doseGrams !== '' ? Number(doseGrams) : 15;
+  const parsedWater = waterGrams !== '' ? Number(waterGrams) : 225;
+  const parsedTemp = waterTemp !== '' ? Number(waterTemp) : 92;
+  const ratio = calculateRatio(parsedDose, parsedWater);
 
   const daysOffRoast = currentBean ? calculateDaysOffRoast(currentBean.roastDate) : 0;
+
+  const tdsNum = parseFloat(tdsInput);
+  const eyPercent = !isNaN(tdsNum) && tdsNum > 0 && parsedDose > 0
+    ? calculateExtractionYield(tdsNum, parsedWater, parsedDose)
+    : undefined;
 
   const handleFinishTimer = (totalSeconds: number, finalStages: PourStage[]) => {
     setTotalTimeSeconds(totalSeconds);
@@ -154,7 +158,7 @@ export const BrewSessionModal: React.FC = () => {
   const handleSaveBrew = () => {
     if (!currentBean) return;
 
-    const draftLog: Omit<BrewLog, 'id'> = {
+    const draftLog: Omit<BrewLog, 'id' | 'createdAt' | 'updatedAt'> = {
       beanId: currentBean.id,
       brewDate: new Date().toISOString(),
       daysOffRoast,
@@ -162,10 +166,10 @@ export const BrewSessionModal: React.FC = () => {
       filterPaper,
       grinder,
       grindSetting,
-      doseGrams,
-      waterGrams,
+      doseGrams: parsedDose,
+      waterGrams: parsedWater,
       ratio,
-      waterTempCelsius: waterTemp,
+      waterTempCelsius: parsedTemp,
       waterType,
       bloomWaterGrams: stages[0]?.pourWaterGrams || 45,
       bloomDurationSeconds: stages[0]?.durationSeconds || 40,
@@ -341,8 +345,8 @@ export const BrewSessionModal: React.FC = () => {
                     step="0.1"
                     value={doseGrams}
                     onChange={(e) => {
-                      const d = parseFloat(e.target.value) || 0;
-                      setDoseGrams(d);
+                      const val = e.target.value;
+                      setDoseGrams(val === '' ? '' : parseFloat(val));
                     }}
                     className="w-full bg-stone-900 text-stone-100 font-mono text-sm px-3 py-2 rounded-xl border border-stone-800 focus:border-amber-500 focus:outline-none"
                   />
@@ -355,8 +359,8 @@ export const BrewSessionModal: React.FC = () => {
                     step="1"
                     value={waterGrams}
                     onChange={(e) => {
-                      const w = parseFloat(e.target.value) || 0;
-                      setWaterGrams(w);
+                      const val = e.target.value;
+                      setWaterGrams(val === '' ? '' : parseFloat(val));
                     }}
                     className="w-full bg-stone-900 text-stone-100 font-mono text-sm px-3 py-2 rounded-xl border border-stone-800 focus:border-amber-500 focus:outline-none"
                   />
@@ -374,7 +378,10 @@ export const BrewSessionModal: React.FC = () => {
                   <input
                     type="number"
                     value={waterTemp}
-                    onChange={(e) => setWaterTemp(parseFloat(e.target.value) || 0)}
+                    onChange={(e) => {
+                      const val = e.target.value;
+                      setWaterTemp(val === '' ? '' : parseFloat(val));
+                    }}
                     className="w-full bg-stone-900 text-stone-100 font-mono text-sm px-3 py-2 rounded-xl border border-stone-800 focus:border-amber-500 focus:outline-none"
                   />
                 </div>
@@ -450,10 +457,11 @@ export const BrewSessionModal: React.FC = () => {
                         <span className="text-stone-500 text-[10px]">目標:</span>
                         <input
                           type="number"
-                          value={st.targetWaterGrams}
-                          onChange={(e) =>
-                            updateStage(idx, { targetWaterGrams: parseFloat(e.target.value) || 0 })
-                          }
+                          value={st.targetWaterGrams || ''}
+                          onChange={(e) => {
+                            const val = e.target.value;
+                            updateStage(idx, { targetWaterGrams: val === '' ? 0 : parseFloat(val) });
+                          }}
                           className="w-14 bg-stone-900 px-1.5 py-1 rounded text-amber-300 font-mono text-center border border-stone-800"
                         />
                         <span className="text-stone-500 text-[10px]">g</span>
@@ -462,10 +470,11 @@ export const BrewSessionModal: React.FC = () => {
                         <span className="text-stone-500 text-[10px]">時間:</span>
                         <input
                           type="number"
-                          value={st.durationSeconds}
-                          onChange={(e) =>
-                            updateStage(idx, { durationSeconds: parseInt(e.target.value) || 0 })
-                          }
+                          value={st.durationSeconds || ''}
+                          onChange={(e) => {
+                            const val = e.target.value;
+                            updateStage(idx, { durationSeconds: val === '' ? 0 : parseInt(val) });
+                          }}
                           className="w-12 bg-stone-900 px-1.5 py-1 rounded text-stone-200 font-mono text-center border border-stone-800"
                         />
                         <span className="text-stone-500 text-[10px]">s</span>
@@ -488,8 +497,8 @@ export const BrewSessionModal: React.FC = () => {
           {step === 2 && (
             <LiveTimer
               stages={stages}
-              totalTargetWater={waterGrams}
-              doseGrams={doseGrams}
+              totalTargetWater={parsedWater}
+              doseGrams={parsedDose}
               onFinishBrew={handleFinishTimer}
             />
           )}
@@ -609,9 +618,9 @@ export const BrewSessionModal: React.FC = () => {
               {/* Dial-in Barista Advisor Card */}
               <DialinAdvisorCard
                 log={{
-                  doseGrams,
-                  waterGrams,
-                  waterTempCelsius: waterTemp,
+                  doseGrams: parsedDose,
+                  waterGrams: parsedWater,
+                  waterTempCelsius: parsedTemp,
                   ratio,
                   totalTimeSeconds,
                   sensory,
