@@ -16,7 +16,8 @@ export type AppTheme =
   | 'warm-amber'
   | 'geisha-ruby'
   | 'nordic-sage'
-  | 'tokyo-cyan';
+  | 'tokyo-cyan'
+  | 'deep-navy-ice';
 
 export interface ThemeInfo {
   id: AppTheme;
@@ -236,6 +237,20 @@ export const THEMES: ThemeInfo[] = [
     bgColor: '#08090c',
     isDark: true,
     emoji: '🪨',
+  },
+  {
+    id: 'deep-navy-ice',
+    mode: 'dark',
+    category: 'modern',
+    nameZh: '🌌 深海星空與矢車菊冰藍 (Deep Navy & Ice)',
+    nameEn: 'Deep Navy & Icy Blue (Dark)',
+    descriptionZh: '深邃午夜海軍藍底色、暮光藍與矢車菊冰藍光澤',
+    descriptionEn: 'Deep navy canvas (#091540), dusk blue & cornflower ice (#7692FF / #ABD2FA)',
+    primaryColor: '#7692FF',
+    secondaryColor: '#1B2CC1',
+    bgColor: '#091540',
+    isDark: true,
+    emoji: '🌌',
   },
 ];
 

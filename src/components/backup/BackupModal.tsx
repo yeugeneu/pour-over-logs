@@ -196,7 +196,7 @@ export const BackupModal: React.FC = () => {
             <div className="text-[11px] font-semibold text-stone-400 flex items-center gap-1">
               <span>🌙 {language === 'zh-TW' ? '夜間風味主題 (Dark Mode)' : 'Dark Mode Themes'}</span>
             </div>
-            <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-8 gap-2">
+            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-9 gap-2">
               {THEMES.filter((t) => t.mode === 'dark').map((t) => (
                 <button
                   key={t.id}
@@ -212,7 +212,7 @@ export const BackupModal: React.FC = () => {
                     <span>{t.emoji}</span>
                     <div className="w-3 h-3 rounded-full border border-white/20" style={{ backgroundColor: t.primaryColor }} />
                   </div>
-                  <span className="truncate text-[11px] font-medium">{language === 'zh-TW' ? t.nameZh.replace(' (Dark)', '') : t.nameEn.replace(' (Dark)', '')}</span>
+                  <span className="truncate text-[11px] font-medium">{language === 'zh-TW' ? t.nameZh.replace(' (Dark)', '').replace(' (Deep Navy & Ice)', '') : t.nameEn.replace(' (Dark)', '')}</span>
                 </button>
               ))}
             </div>

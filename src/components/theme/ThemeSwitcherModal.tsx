@@ -43,7 +43,9 @@ export const ThemeSwitcherModal: React.FC = () => {
                 <Sparkles className="w-4 h-4 text-amber-400" />
               </h3>
               <p className="text-xs text-stone-400">
-                {language === 'zh-TW' ? '共 14 款專屬精品手沖主題，包含 6 款清爽明亮晨光白與 8 款風味暗黑系' : '14 handcrafted themes: 6 crisp Light Mode & 8 rich Dark Mode palettes'}
+                {language === 'zh-TW'
+                  ? `共 ${THEMES.length} 款專屬精品手沖主題，包含 ${THEMES.filter((t) => t.mode === 'light').length} 款清爽明亮晨光白與 ${THEMES.filter((t) => t.mode === 'dark').length} 款風味暗黑系`
+                  : `${THEMES.length} handcrafted themes: ${THEMES.filter((t) => t.mode === 'light').length} crisp Light Mode & ${THEMES.filter((t) => t.mode === 'dark').length} rich Dark Mode palettes`}
               </p>
             </div>
           </div>
@@ -64,11 +66,11 @@ export const ThemeSwitcherModal: React.FC = () => {
             className={`px-3 py-1.5 rounded-xl text-xs font-semibold whitespace-nowrap transition flex items-center gap-1.5 ${
               activeFilter === 'light'
                 ? 'bg-amber-500 text-stone-950 shadow-md ring-2 ring-amber-400/50'
-                : 'text-stone-300 hover:text-white bg-stone-900/80 border border-stone-700'
+                : 'text-stone-300 hover:text-stone-100 bg-stone-900/80 border border-stone-700'
             }`}
           >
             <Sun className="w-3.5 h-3.5 text-amber-400" />
-            <span>☀️ {language === 'zh-TW' ? '明亮晨光 (6 款)' : 'Light Mode (6)'}</span>
+            <span>☀️ {language === 'zh-TW' ? `明亮晨光 (${THEMES.filter((t) => t.mode === 'light').length} 款)` : `Light (${THEMES.filter((t) => t.mode === 'light').length})`}</span>
           </button>
 
           <button
@@ -81,7 +83,7 @@ export const ThemeSwitcherModal: React.FC = () => {
             }`}
           >
             <Moon className="w-3.5 h-3.5 text-amber-400" />
-            <span>🌙 {language === 'zh-TW' ? '夜間暗黑 (8 款)' : 'Dark Mode (8)'}</span>
+            <span>🌙 {language === 'zh-TW' ? `夜間暗黑 (${THEMES.filter((t) => t.mode === 'dark').length} 款)` : `Dark (${THEMES.filter((t) => t.mode === 'dark').length})`}</span>
           </button>
 
           <button
@@ -106,7 +108,7 @@ export const ThemeSwitcherModal: React.FC = () => {
                 : 'text-stone-400 hover:text-stone-200 bg-stone-900/60 border border-stone-800'
             }`}
           >
-            🌟 {language === 'zh-TW' ? '全部 (14 款)' : 'All (14)'}
+            🌟 {language === 'zh-TW' ? `全部 (${THEMES.length} 款)` : `All (${THEMES.length})`}
           </button>
         </div>
 

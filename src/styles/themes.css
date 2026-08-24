@@ -420,6 +420,35 @@
   --theme-glow: 2 132 199;
 }
 
+/* 2.8 DEEP NAVY & ICY BLUE (🌌 深海星空與矢車菊冰藍 - DARK) */
+[data-theme="deep-navy-ice"] {
+  --color-stone-950: 9 21 64;
+  --color-stone-900: 17 31 82;
+  --color-stone-800: 29 47 107;
+  --color-stone-700: 61 81 140;
+  --color-stone-600: 88 109 168;
+  --color-stone-500: 118 140 198;
+  --color-stone-400: 155 178 230;
+  --color-stone-300: 171 210 250;
+  --color-stone-200: 215 233 252;
+  --color-stone-100: 242 248 255;
+  --color-stone-50: 250 253 255;
+
+  --color-amber-950: 12 20 85;
+  --color-amber-900: 18 30 135;
+  --color-amber-800: 27 44 193;
+  --color-amber-700: 55 75 220;
+  --color-amber-600: 85 110 245;
+  --color-amber-500: 118 146 255;
+  --color-amber-400: 145 170 255;
+  --color-amber-300: 171 210 250;
+  --color-amber-200: 200 225 253;
+  --color-amber-100: 228 240 254;
+  --color-amber-50: 245 250 255;
+
+  --theme-glow: 118 146 255;
+}
+
 /* Dynamic theme glow helper */
 .coffee-glow {
   box-shadow: 0 0 25px -5px rgb(var(--theme-glow) / 0.25);
