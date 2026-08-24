@@ -50,7 +50,7 @@ export const SyncStatusBadge: React.FC = () => {
   return (
     <button
       onClick={openAuthModal}
-      className={`flex items-center space-x-1.5 px-2.5 py-1.5 rounded-xl border text-xs font-medium transition cursor-pointer ${status.badgeBg}`}
+      className={`flex items-center space-x-1.5 px-2 sm:px-2.5 py-1.5 rounded-xl border text-xs font-medium transition cursor-pointer shrink-0 whitespace-nowrap ${status.badgeBg}`}
       title="Cloud Sync & Account Settings"
     >
       {syncStatus === 'syncing' ? (

@@ -25,6 +25,15 @@
   }
 }
 
+/* Hide scrollbar for clean horizontal tabs */
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+.no-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
 .coffee-card-gradient {
   background: linear-gradient(145deg, rgba(38, 30, 26, 0.85) 0%, rgba(26, 20, 18, 0.95) 100%);
 }
