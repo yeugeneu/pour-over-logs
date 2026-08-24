@@ -38,6 +38,7 @@ export const BrewSessionModal: React.FC = () => {
   const [grindSetting, setGrindSetting] = useState<string>('23 clicks');
   const [doseGrams, setDoseGrams] = useState<number | ''>(15);
   const [waterGrams, setWaterGrams] = useState<number | ''>(225);
+  const [targetRatio, setTargetRatio] = useState<number | ''>(15);
   const [waterTemp, setWaterTemp] = useState<number | ''>(92);
   const [waterType, setWaterType] = useState<string>('RO Filtered');
   const [selectedPresetId, setSelectedPresetId] = useState<string>('traditional-three-stage');
@@ -72,15 +73,93 @@ export const BrewSessionModal: React.FC = () => {
     }
   }, [brewModalBeanId]);
 
+  // Rescale stages proportionally to new total water
+  const rescaleStages = (newTotalWater: number) => {
+    if (newTotalWater <= 0) return;
+    const preset = RECIPE_PRESETS.find((p) => p.id === selectedPresetId);
+    if (preset) {
+      const updatedStages = preset.stages.map((st, idx) => {
+        const targetWater = Math.round((newTotalWater * st.targetWaterPercent) / 100);
+        const pourWater = Math.round((newTotalWater * st.pourWaterPercent) / 100);
+        return {
+          id: `st-${idx + 1}`,
+          name: st.name,
+          targetWaterGrams: targetWater,
+          pourWaterGrams: pourWater,
+          startTimeSeconds: st.startTimeSeconds,
+          durationSeconds: st.durationSeconds,
+          technique: st.technique,
+          description: st.description,
+        };
+      });
+      setStages(updatedStages);
+    } else if (stages.length > 0) {
+      const currentSum = stages[stages.length - 1]?.targetWaterGrams || (waterGrams !== '' ? Number(waterGrams) : 1);
+      const factor = newTotalWater / currentSum;
+      const updatedStages = stages.map((st) => ({
+        ...st,
+        targetWaterGrams: Math.round(st.targetWaterGrams * factor),
+        pourWaterGrams: Math.round(st.pourWaterGrams * factor),
+      }));
+      setStages(updatedStages);
+    }
+  };
+
+  const handleDoseChange = (val: string) => {
+    if (val === '') {
+      setDoseGrams('');
+      return;
+    }
+    const newDose = parseFloat(val);
+    setDoseGrams(newDose);
+    if (newDose > 0 && targetRatio !== '' && Number(targetRatio) > 0) {
+      const newWater = Math.round(newDose * Number(targetRatio));
+      setWaterGrams(newWater);
+      rescaleStages(newWater);
+    }
+  };
+
+  const handleWaterChange = (val: string) => {
+    if (val === '') {
+      setWaterGrams('');
+      return;
+    }
+    const newWater = parseFloat(val);
+    setWaterGrams(newWater);
+    const curDose = doseGrams !== '' ? Number(doseGrams) : 0;
+    if (newWater > 0 && curDose > 0) {
+      const newRatio = parseFloat((newWater / curDose).toFixed(1));
+      setTargetRatio(newRatio);
+      rescaleStages(newWater);
+    }
+  };
+
+  const handleRatioChange = (val: string | number) => {
+    if (val === '') {
+      setTargetRatio('');
+      return;
+    }
+    const newRatio = typeof val === 'number' ? val : parseFloat(val);
+    setTargetRatio(newRatio);
+    const curDose = doseGrams !== '' ? Number(doseGrams) : 15;
+    if (curDose > 0 && newRatio > 0) {
+      const newWater = Math.round(curDose * newRatio);
+      setWaterGrams(newWater);
+      rescaleStages(newWater);
+    }
+  };
+
   // Load recipe preset stages whenever preset or water changes
   const applyPreset = (presetId: string, customWater?: number, customDose?: number) => {
     const preset = RECIPE_PRESETS.find((p) => p.id === presetId);
     if (!preset) return;
 
     const currentWater = customWater || (waterGrams !== '' ? Number(waterGrams) : 225);
+    const currentDose = customDose || (doseGrams !== '' ? Number(doseGrams) : 15);
 
-    if (!customWater) setWaterGrams(preset.defaultWaterGrams);
-    if (!customDose) setDoseGrams(preset.defaultDoseGrams);
+    setWaterGrams(currentWater);
+    setDoseGrams(currentDose);
+    setTargetRatio(parseFloat((currentWater / currentDose).toFixed(1)));
     setDripper(preset.dripper);
     setWaterTemp(preset.defaultTempCelsius);
     setGrindSetting(preset.defaultGrindSetting);
@@ -118,6 +197,7 @@ export const BrewSessionModal: React.FC = () => {
           setGrindSetting(baseLog.grindSetting);
           setDoseGrams(baseLog.doseGrams);
           setWaterGrams(baseLog.waterGrams);
+          setTargetRatio(baseLog.ratio);
           setWaterTemp(baseLog.waterTempCelsius);
           setWaterType(baseLog.waterType || 'RO Filtered');
           setStages(baseLog.stages || []);
@@ -140,7 +220,7 @@ export const BrewSessionModal: React.FC = () => {
   const parsedDose = doseGrams !== '' ? Number(doseGrams) : 15;
   const parsedWater = waterGrams !== '' ? Number(waterGrams) : 225;
   const parsedTemp = waterTemp !== '' ? Number(waterTemp) : 92;
-  const ratio = calculateRatio(parsedDose, parsedWater);
+  const ratio = targetRatio !== '' ? Number(targetRatio) : calculateRatio(parsedDose, parsedWater);
 
   const daysOffRoast = currentBean ? calculateDaysOffRoast(currentBean.roastDate) : 0;
 
@@ -337,53 +417,75 @@ export const BrewSessionModal: React.FC = () => {
               </div>
 
               {/* Dose, Water, Ratio, Temp Grid */}
-              <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 bg-stone-950/60 p-3.5 rounded-2xl border border-stone-800">
-                <div>
-                  <label className="block text-[11px] text-stone-400 mb-1">{t.brew.dose}</label>
-                  <input
-                    type="number"
-                    step="0.1"
-                    value={doseGrams}
-                    onChange={(e) => {
-                      const val = e.target.value;
-                      setDoseGrams(val === '' ? '' : parseFloat(val));
-                    }}
-                    className="w-full bg-stone-900 text-stone-100 font-mono text-sm px-3 py-2 rounded-xl border border-stone-800 focus:border-amber-500 focus:outline-none"
-                  />
-                </div>
+              <div className="space-y-2">
+                <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 bg-stone-950/60 p-3.5 rounded-2xl border border-stone-800">
+                  <div>
+                    <label className="block text-[11px] text-stone-400 mb-1">{t.brew.dose}</label>
+                    <input
+                      type="number"
+                      step="0.1"
+                      value={doseGrams}
+                      onChange={(e) => handleDoseChange(e.target.value)}
+                      className="w-full bg-stone-900 text-stone-100 font-mono text-sm px-3 py-2 rounded-xl border border-stone-800 focus:border-amber-500 focus:outline-none"
+                    />
+                  </div>
 
-                <div>
-                  <label className="block text-[11px] text-stone-400 mb-1">{t.brew.water}</label>
-                  <input
-                    type="number"
-                    step="1"
-                    value={waterGrams}
-                    onChange={(e) => {
-                      const val = e.target.value;
-                      setWaterGrams(val === '' ? '' : parseFloat(val));
-                    }}
-                    className="w-full bg-stone-900 text-stone-100 font-mono text-sm px-3 py-2 rounded-xl border border-stone-800 focus:border-amber-500 focus:outline-none"
-                  />
-                </div>
+                  <div>
+                    <label className="block text-[11px] text-stone-400 mb-1">{t.brew.water}</label>
+                    <input
+                      type="number"
+                      step="1"
+                      value={waterGrams}
+                      onChange={(e) => handleWaterChange(e.target.value)}
+                      className="w-full bg-stone-900 text-stone-100 font-mono text-sm px-3 py-2 rounded-xl border border-stone-800 focus:border-amber-500 focus:outline-none"
+                    />
+                  </div>
 
-                <div>
-                  <label className="block text-[11px] text-stone-400 mb-1">{t.brew.ratio}</label>
-                  <div className="bg-stone-900 text-amber-300 font-mono text-sm px-3 py-2 rounded-xl border border-stone-800 flex items-center justify-center font-bold">
-                    1 : {ratio}
+                  <div>
+                    <label className="block text-[11px] text-stone-400 mb-1">{t.brew.ratio}</label>
+                    <div className="flex items-center bg-stone-900 px-2.5 py-2 rounded-xl border border-stone-800 text-amber-300 font-mono text-sm">
+                      <span className="font-bold mr-1 shrink-0">1 :</span>
+                      <input
+                        type="number"
+                        step="0.1"
+                        value={targetRatio}
+                        onChange={(e) => handleRatioChange(e.target.value)}
+                        className="w-full bg-transparent text-amber-300 font-mono font-bold text-sm focus:outline-none"
+                      />
+                    </div>
+                  </div>
+
+                  <div>
+                    <label className="block text-[11px] text-stone-400 mb-1">{t.brew.waterTemp}</label>
+                    <input
+                      type="number"
+                      value={waterTemp}
+                      onChange={(e) => {
+                        const val = e.target.value;
+                        setWaterTemp(val === '' ? '' : parseFloat(val));
+                      }}
+                      className="w-full bg-stone-900 text-stone-100 font-mono text-sm px-3 py-2 rounded-xl border border-stone-800 focus:border-amber-500 focus:outline-none"
+                    />
                   </div>
                 </div>
 
-                <div>
-                  <label className="block text-[11px] text-stone-400 mb-1">{t.brew.waterTemp}</label>
-                  <input
-                    type="number"
-                    value={waterTemp}
-                    onChange={(e) => {
-                      const val = e.target.value;
-                      setWaterTemp(val === '' ? '' : parseFloat(val));
-                    }}
-                    className="w-full bg-stone-900 text-stone-100 font-mono text-sm px-3 py-2 rounded-xl border border-stone-800 focus:border-amber-500 focus:outline-none"
-                  />
+                {/* Quick Ratio Preset Pills */}
+                <div className="flex items-center gap-1.5 px-1 overflow-x-auto no-scrollbar">
+                  <span className="text-[10px] text-stone-500 shrink-0">常用比例:</span>
+                  {[14, 15, 15.5, 16, 16.5, 17].map((r) => (
+                    <button
+                      key={r}
+                      type="button"
+                      onClick={() => handleRatioChange(r)}
+                      className={`px-2 py-0.5 rounded-lg text-[10px] font-mono transition shrink-0 ${
+                        targetRatio === r
+                          ? 'bg-amber-500/20 text-amber-300 border border-amber-500/40 font-bold'
+                          : 'bg-stone-950/60 hover:bg-stone-800 text-stone-400 border border-stone-800'
+                      }`}
+                    >
+                      1:{r}
+                    </button>
+                  ))}
                 </div>
               </div>
 
