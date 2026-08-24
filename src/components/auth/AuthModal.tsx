@@ -8,6 +8,8 @@ import {
   verifyEmailOtp,
   signInWithPassword,
   signUpWithEmail,
+  sendPasswordResetEmail,
+  updateUserPassword,
   signOut,
 } from '../../services/authService';
 import {
@@ -27,6 +29,7 @@ import {
   Lock,
   UserPlus,
   LogIn,
+  ShieldCheck,
 } from 'lucide-react';
 
 export const AuthModal: React.FC = () => {
@@ -51,6 +54,7 @@ export const AuthModal: React.FC = () => {
   const [passwordInput, setPasswordInput] = useState('');
   const [otpInput, setOtpInput] = useState('');
   const [isOtpSent, setIsOtpSent] = useState(false);
+  const [newPasswordSetting, setNewPasswordSetting] = useState('');
   const [feedback, setFeedback] = useState<{ type: 'success' | 'error'; message: string } | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -92,20 +96,38 @@ export const AuthModal: React.FC = () => {
       const { error } = await signUpWithEmail(emailInput.trim(), passwordInput.trim());
       setIsSubmitting(false);
       if (error) {
-        setFeedback({ type: 'error', message: error.message });
+        if (error.message.toLowerCase().includes('already registered') || error.message.toLowerCase().includes('already exists')) {
+          setFeedback({
+            type: 'error',
+            message: language === 'zh-TW'
+              ? '此信箱已註冊過！請直接切換至「登入」或點擊下方「忘記 / 設定密碼」。'
+              : 'This email is already registered! Please switch to Sign In or click "Forgot / Set Password".',
+          });
+        } else {
+          setFeedback({ type: 'error', message: error.message });
+        }
       } else {
         setFeedback({
           type: 'success',
           message: language === 'zh-TW'
-            ? '註冊成功！若有收到確認信請點擊確認，或直接登入。'
-            : 'Sign up successful! Please check your email if confirmation is required.',
+            ? '註冊完成！若有收到確認信請點擊確認，或可直接登入。'
+            : 'Sign up complete! Please check your email if confirmation is required.',
         });
       }
     } else {
       const { error } = await signInWithPassword(emailInput.trim(), passwordInput.trim());
       setIsSubmitting(false);
       if (error) {
-        setFeedback({ type: 'error', message: error.message });
+        if (error.message.toLowerCase().includes('invalid login credentials')) {
+          setFeedback({
+            type: 'error',
+            message: language === 'zh-TW'
+              ? '帳號或密碼錯誤。若此帳號先前僅使用 Magic Link 登入過，請點擊下方「忘記 / 設定密碼」為此信箱設定一組密碼！'
+              : 'Invalid credentials. If this account was created via Magic Link, click "Forgot / Set Password" below to create a password.',
+          });
+        } else {
+          setFeedback({ type: 'error', message: error.message });
+        }
       } else {
         setFeedback({
           type: 'success',
@@ -115,6 +137,58 @@ export const AuthModal: React.FC = () => {
           closeAuthModal();
         }, 800);
       }
+    }
+  };
+
+  const handleForgotPassword = async () => {
+    if (!emailInput.trim()) {
+      setFeedback({
+        type: 'error',
+        message: language === 'zh-TW' ? '請先在上方填寫您的電子信箱' : 'Please enter your email address above first.',
+      });
+      return;
+    }
+
+    setIsSubmitting(true);
+    setFeedback(null);
+    const { error } = await sendPasswordResetEmail(emailInput.trim());
+    setIsSubmitting(false);
+
+    if (error) {
+      setFeedback({ type: 'error', message: error.message });
+    } else {
+      setFeedback({
+        type: 'success',
+        message: language === 'zh-TW'
+          ? `重設 / 設定密碼信已寄送至 ${emailInput}！請至信箱點擊連結設定密碼。`
+          : `Password reset link sent to ${emailInput}! Check your inbox to set your password.`,
+      });
+    }
+  };
+
+  const handleUpdatePasswordWhenLoggedIn = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!newPasswordSetting.trim() || newPasswordSetting.length < 6) {
+      setFeedback({
+        type: 'error',
+        message: language === 'zh-TW' ? '新密碼至少需 6 個字元' : 'Password must be at least 6 characters.',
+      });
+      return;
+    }
+
+    setIsSubmitting(true);
+    setFeedback(null);
+    const { error } = await updateUserPassword(newPasswordSetting.trim());
+    setIsSubmitting(false);
+
+    if (error) {
+      setFeedback({ type: 'error', message: error.message });
+    } else {
+      setNewPasswordSetting('');
+      setFeedback({
+        type: 'success',
+        message: language === 'zh-TW' ? '密碼設定成功！今後可直接使用帳號密碼登入。' : 'Password updated successfully!',
+      });
     }
   };
 
@@ -312,6 +386,37 @@ export const AuthModal: React.FC = () => {
                     </button>
                   </div>
 
+                  {/* Set / Change Password for Logged-In User */}
+                  <form onSubmit={handleUpdatePasswordWhenLoggedIn} className="p-3.5 rounded-2xl bg-stone-950/50 border border-stone-800 space-y-2.5">
+                    <div className="flex items-center space-x-1.5 text-xs font-semibold text-stone-300">
+                      <ShieldCheck className="w-4 h-4 text-amber-400" />
+                      <span>{language === 'zh-TW' ? '設定 / 修改帳號登入密碼' : 'Set / Update Account Password'}</span>
+                    </div>
+                    <p className="text-[11px] text-stone-400">
+                      {language === 'zh-TW'
+                        ? '設定密碼後，今後在 iPhone PWA 或任何設備皆可直接輸入密碼快速登入。'
+                        : 'After setting a password, you can sign in directly with email & password anytime.'}
+                    </p>
+                    <div className="flex items-center gap-2">
+                      <input
+                        type="password"
+                        minLength={6}
+                        required
+                        value={newPasswordSetting}
+                        onChange={(e) => setNewPasswordSetting(e.target.value)}
+                        placeholder={language === 'zh-TW' ? '輸入新密碼 (至少 6 位)' : 'New password (min 6 chars)'}
+                        className="flex-1 bg-stone-900 text-stone-100 text-xs px-3 py-2 rounded-xl border border-stone-800 focus:border-amber-500 focus:outline-none"
+                      />
+                      <button
+                        type="submit"
+                        disabled={isSubmitting || !newPasswordSetting.trim()}
+                        className="px-3.5 py-2 rounded-xl bg-amber-500/20 hover:bg-amber-500/30 text-amber-300 font-semibold text-xs border border-amber-500/40 transition disabled:opacity-50 shrink-0"
+                      >
+                        {language === 'zh-TW' ? '儲存密碼' : 'Save'}
+                      </button>
+                    </div>
+                  </form>
+
                   {/* Local items count */}
                   <div className="p-3 rounded-xl bg-stone-950/40 border border-stone-800/80 text-[11px] text-stone-400 text-center">
                     目前本機庫存：<span className="text-white font-mono">{beans.length}</span> 支咖啡豆 • <span className="text-white font-mono">{logs.length}</span> 筆沖煮紀錄
@@ -420,9 +525,20 @@ export const AuthModal: React.FC = () => {
                       </div>
 
                       <div>
-                        <label className="block text-xs font-semibold text-stone-300 mb-1">
-                          {language === 'zh-TW' ? '密碼' : 'Password'}
-                        </label>
+                        <div className="flex items-center justify-between mb-1">
+                          <label className="block text-xs font-semibold text-stone-300">
+                            {language === 'zh-TW' ? '密碼' : 'Password'}
+                          </label>
+                          {!isSignUpMode && (
+                            <button
+                              type="button"
+                              onClick={handleForgotPassword}
+                              className="text-[11px] text-amber-400 hover:text-amber-300 transition"
+                            >
+                              {language === 'zh-TW' ? '忘記 / 設定密碼？' : 'Forgot / Set password?'}
+                            </button>
+                          )}
+                        </div>
                         <div className="relative">
                           <Lock className="w-4 h-4 text-stone-500 absolute left-3 top-1/2 -translate-y-1/2" />
                           <input

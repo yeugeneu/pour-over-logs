@@ -99,6 +99,32 @@ export async function signUpWithEmail(email: string, password: string): Promise<
   return { error, user: data?.user || null };
 }
 
+export async function sendPasswordResetEmail(email: string): Promise<{ error: Error | null }> {
+  const supabase = getSupabase();
+  if (!supabase) {
+    return { error: new Error('Supabase is not configured. Please enter your project credentials.') };
+  }
+
+  const { error } = await supabase.auth.resetPasswordForEmail(email.trim(), {
+    redirectTo: window.location.origin,
+  });
+
+  return { error };
+}
+
+export async function updateUserPassword(newPassword: string): Promise<{ error: Error | null }> {
+  const supabase = getSupabase();
+  if (!supabase) {
+    return { error: new Error('Supabase is not configured. Please enter your project credentials.') };
+  }
+
+  const { error } = await supabase.auth.updateUser({
+    password: newPassword,
+  });
+
+  return { error };
+}
+
 export async function signOut(): Promise<{ error: Error | null }> {
   const supabase = getSupabase();
   if (!supabase) return { error: null };
