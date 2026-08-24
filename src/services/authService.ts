@@ -68,6 +68,37 @@ export async function verifyEmailOtp(email: string, token: string): Promise<{ er
   return { error, user: data?.user || null };
 }
 
+export async function signInWithPassword(email: string, password: string): Promise<{ error: Error | null; user?: User | null }> {
+  const supabase = getSupabase();
+  if (!supabase) {
+    return { error: new Error('Supabase is not configured. Please enter your project credentials.') };
+  }
+
+  const { data, error } = await supabase.auth.signInWithPassword({
+    email: email.trim(),
+    password,
+  });
+
+  return { error, user: data?.user || null };
+}
+
+export async function signUpWithEmail(email: string, password: string): Promise<{ error: Error | null; user?: User | null }> {
+  const supabase = getSupabase();
+  if (!supabase) {
+    return { error: new Error('Supabase is not configured. Please enter your project credentials.') };
+  }
+
+  const { data, error } = await supabase.auth.signUp({
+    email: email.trim(),
+    password,
+    options: {
+      emailRedirectTo: window.location.origin,
+    },
+  });
+
+  return { error, user: data?.user || null };
+}
+
 export async function signOut(): Promise<{ error: Error | null }> {
   const supabase = getSupabase();
   if (!supabase) return { error: null };
