@@ -184,7 +184,7 @@ export const BeanCard: React.FC<BeanCardProps> = ({ bean }) => {
       <div className="grid grid-cols-2 gap-2 pt-1">
         <button
           onClick={() => openBeanDetailModal(bean.id)}
-          className="px-3 py-2 rounded-xl bg-stone-800 hover:bg-stone-700 text-stone-300 hover:text-white text-xs font-semibold transition text-center"
+          className="px-3 py-2 rounded-xl bg-stone-800 hover:bg-stone-700 text-stone-300 hover:text-stone-100 text-xs font-semibold transition text-center"
         >
           {t.beans.beanDetails}
         </button>

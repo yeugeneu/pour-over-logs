@@ -44,17 +44,17 @@ export const Navbar: React.FC = () => {
           </div>
 
           {/* Center Quick Stats Badges (Desktop) */}
-          <div className="hidden lg:flex items-center space-x-6 px-4 py-1.5 rounded-full bg-stone-900/80 border border-stone-800/80 text-xs shrink-0">
+          <div className="hidden lg:flex items-center space-x-6 px-4 py-1.5 rounded-full bg-stone-900/80 border border-stone-800/80 text-xs shrink-0 shadow-sm">
             <div className="flex items-center space-x-1.5 text-stone-300 whitespace-nowrap">
               <Layers className="w-3.5 h-3.5 text-amber-500" />
               <span>{t.app.totalBeans}:</span>
-              <span className="font-bold text-white">{totalBeans}</span>
+              <span className="font-bold text-stone-100 font-mono">{totalBeans}</span>
             </div>
             <div className="h-3 w-px bg-stone-800" />
             <div className="flex items-center space-x-1.5 text-stone-300 whitespace-nowrap">
               <Flame className="w-3.5 h-3.5 text-amber-500" />
               <span>{t.app.brewsLogged}:</span>
-              <span className="font-bold text-white">{totalBrews}</span>
+              <span className="font-bold text-stone-100 font-mono">{totalBrews}</span>
             </div>
             <div className="h-3 w-px bg-stone-800" />
             <div className="flex items-center space-x-1.5 text-stone-300 whitespace-nowrap">
@@ -72,7 +72,7 @@ export const Navbar: React.FC = () => {
             {/* Theme Switcher Button */}
             <button
               onClick={openThemeModal}
-              className="shrink-0 p-1.5 sm:px-2 sm:py-1.5 text-xs font-semibold rounded-xl bg-stone-900 hover:bg-stone-800 text-stone-300 hover:text-white border border-stone-800 transition flex items-center gap-1 shadow-sm"
+              className="shrink-0 p-1.5 sm:px-2 sm:py-1.5 text-xs font-semibold rounded-xl bg-stone-900 hover:bg-stone-800 text-stone-300 hover:text-stone-100 border border-stone-800 transition flex items-center gap-1 shadow-sm"
               title={language === 'zh-TW' ? `視覺風格主題 (${currentThemeInfo.nameZh})` : `Theme: ${currentThemeInfo.nameEn}`}
             >
               <Palette className="w-3.5 h-3.5 text-amber-400" />
@@ -82,7 +82,7 @@ export const Navbar: React.FC = () => {
             {/* Language Switch Button */}
             <button
               onClick={() => setLanguage(language === 'zh-TW' ? 'en' : 'zh-TW')}
-              className="shrink-0 whitespace-nowrap min-w-[36px] sm:min-w-[40px] px-2 py-1.5 text-xs font-semibold rounded-xl bg-stone-900 hover:bg-stone-800 text-stone-300 hover:text-white border border-stone-800 transition text-center shadow-sm"
+              className="shrink-0 whitespace-nowrap min-w-[36px] sm:min-w-[40px] px-2 py-1.5 text-xs font-semibold rounded-xl bg-stone-900 hover:bg-stone-800 text-stone-300 hover:text-stone-100 border border-stone-800 transition text-center shadow-sm"
               title="Switch Language"
             >
               {language === 'zh-TW' ? 'EN' : '繁中'}

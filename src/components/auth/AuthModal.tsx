@@ -379,7 +379,7 @@ export const AuthModal: React.FC = () => {
 
                   {/* Local items count */}
                   <div className="p-3 rounded-xl bg-stone-950/40 border border-stone-800/80 text-[11px] text-stone-400 text-center">
-                    目前本機庫存：<span className="text-white font-mono">{beans.length}</span> 支咖啡豆 • <span className="text-white font-mono">{logs.length}</span> 筆沖煮紀錄
+                    目前本機庫存：<span className="text-stone-100 font-mono font-bold">{beans.length}</span> 支咖啡豆 • <span className="text-stone-100 font-mono font-bold">{logs.length}</span> 筆沖煮紀錄
                   </div>
                 </div>
               ) : (

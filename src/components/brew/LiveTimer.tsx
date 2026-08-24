@@ -134,7 +134,7 @@ export const LiveTimer: React.FC<LiveTimerProps> = ({
           <div className="text-xs uppercase tracking-widest text-stone-400 font-medium">
             {t.brew.elapsedTime}
           </div>
-          <div className="text-6xl sm:text-7xl font-extrabold font-mono tracking-tight text-white my-1 drop-shadow-md">
+          <div className="text-6xl sm:text-7xl font-extrabold font-mono tracking-tight text-stone-100 my-1 drop-shadow-md">
             {formatTime(totalSeconds)}
           </div>
         </div>
@@ -168,7 +168,7 @@ export const LiveTimer: React.FC<LiveTimerProps> = ({
             </div>
             <div className="p-2 rounded-xl bg-stone-950/60 border border-stone-800/60">
               <div className="text-[10px] text-stone-400 uppercase">{language === 'zh-TW' ? '累計目標' : 'Cumulative'}</div>
-              <div className="text-sm font-bold font-mono text-white">{currentStage?.targetWaterGrams}g</div>
+              <div className="text-sm font-bold font-mono text-stone-100">{currentStage?.targetWaterGrams}g</div>
             </div>
             <div className="p-2 rounded-xl bg-stone-950/60 border border-stone-800/60">
               <div className="text-[10px] text-stone-400 uppercase">{language === 'zh-TW' ? '建議流速' : 'Flow Rate'}</div>
