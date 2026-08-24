@@ -9,7 +9,7 @@ import { DialinAdvisorCard } from '../advisor/DialinAdvisorCard';
 import { FlavorRadarChart } from '../sensory/FlavorRadarChart';
 import { FlavorTagSelector } from '../sensory/FlavorTagSelector';
 import { LiveTimer } from './LiveTimer';
-import { X, Coffee, Sliders, ChevronRight, ChevronLeft, Sparkles, Check, Bookmark, Plus, Trash2 } from 'lucide-react';
+import { X, Coffee, Sliders, ChevronRight, ChevronLeft, Sparkles, Check, Bookmark, Plus, Trash2, Lock, Unlock } from 'lucide-react';
 
 export const BrewSessionModal: React.FC = () => {
   const {
@@ -39,6 +39,7 @@ export const BrewSessionModal: React.FC = () => {
   const [doseGrams, setDoseGrams] = useState<number | ''>(15);
   const [waterGrams, setWaterGrams] = useState<number | ''>(225);
   const [targetRatio, setTargetRatio] = useState<number | ''>(15);
+  const [isRatioLocked, setIsRatioLocked] = useState<boolean>(true);
   const [waterTemp, setWaterTemp] = useState<number | ''>(92);
   const [waterType, setWaterType] = useState<string>('RO Filtered');
   const [selectedPresetId, setSelectedPresetId] = useState<string>('traditional-three-stage');
@@ -105,6 +106,10 @@ export const BrewSessionModal: React.FC = () => {
     }
   };
 
+  const toggleRatioLock = () => {
+    setIsRatioLocked((prev) => !prev);
+  };
+
   const handleDoseChange = (val: string) => {
     if (val === '') {
       setDoseGrams('');
@@ -112,10 +117,17 @@ export const BrewSessionModal: React.FC = () => {
     }
     const newDose = parseFloat(val);
     setDoseGrams(newDose);
-    if (newDose > 0 && targetRatio !== '' && Number(targetRatio) > 0) {
-      const newWater = Math.round(newDose * Number(targetRatio));
-      setWaterGrams(newWater);
-      rescaleStages(newWater);
+    if (newDose > 0) {
+      if (isRatioLocked && targetRatio !== '' && Number(targetRatio) > 0) {
+        // In locked mode: auto scale water = dose * ratio
+        const newWater = Math.round(newDose * Number(targetRatio));
+        setWaterGrams(newWater);
+        rescaleStages(newWater);
+      } else if (!isRatioLocked && waterGrams !== '' && Number(waterGrams) > 0) {
+        // In free mode: update ratio display
+        const newRatio = parseFloat((Number(waterGrams) / newDose).toFixed(1));
+        setTargetRatio(newRatio);
+      }
     }
   };
 
@@ -126,11 +138,21 @@ export const BrewSessionModal: React.FC = () => {
     }
     const newWater = parseFloat(val);
     setWaterGrams(newWater);
-    const curDose = doseGrams !== '' ? Number(doseGrams) : 0;
-    if (newWater > 0 && curDose > 0) {
-      const newRatio = parseFloat((newWater / curDose).toFixed(1));
-      setTargetRatio(newRatio);
-      rescaleStages(newWater);
+    if (newWater > 0) {
+      if (isRatioLocked && targetRatio !== '' && Number(targetRatio) > 0) {
+        // In locked mode: auto scale dose = water / ratio
+        const newDose = parseFloat((newWater / Number(targetRatio)).toFixed(1));
+        setDoseGrams(newDose);
+        rescaleStages(newWater);
+      } else {
+        // In free mode: update ratio display
+        const curDose = doseGrams !== '' ? Number(doseGrams) : 0;
+        if (curDose > 0) {
+          const newRatio = parseFloat((newWater / curDose).toFixed(1));
+          setTargetRatio(newRatio);
+        }
+        rescaleStages(newWater);
+      }
     }
   };
 
@@ -417,44 +439,88 @@ export const BrewSessionModal: React.FC = () => {
               </div>
 
               {/* Dose, Water, Ratio, Temp Grid */}
-              <div className="space-y-2">
+              <div className="space-y-2.5">
                 <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 bg-stone-950/60 p-3.5 rounded-2xl border border-stone-800">
+                  {/* 咖啡粉重 Dose */}
                   <div>
                     <label className="block text-[11px] text-stone-400 mb-1">{t.brew.dose}</label>
                     <input
                       type="number"
                       step="0.1"
+                      placeholder="15"
                       value={doseGrams}
                       onChange={(e) => handleDoseChange(e.target.value)}
                       className="w-full bg-stone-900 text-stone-100 font-mono text-sm px-3 py-2 rounded-xl border border-stone-800 focus:border-amber-500 focus:outline-none"
                     />
                   </div>
 
+                  {/* 總注水量 Water */}
                   <div>
                     <label className="block text-[11px] text-stone-400 mb-1">{t.brew.water}</label>
                     <input
                       type="number"
                       step="1"
+                      placeholder="225"
                       value={waterGrams}
                       onChange={(e) => handleWaterChange(e.target.value)}
                       className="w-full bg-stone-900 text-stone-100 font-mono text-sm px-3 py-2 rounded-xl border border-stone-800 focus:border-amber-500 focus:outline-none"
                     />
                   </div>
 
+                  {/* 粉水比 Ratio with Interactive Lock */}
                   <div>
-                    <label className="block text-[11px] text-stone-400 mb-1">{t.brew.ratio}</label>
-                    <div className="flex items-center bg-stone-900 px-2.5 py-2 rounded-xl border border-stone-800 text-amber-300 font-mono text-sm">
-                      <span className="font-bold mr-1 shrink-0">1 :</span>
+                    <div className="flex items-center justify-between mb-1">
+                      <label className="block text-[11px] text-stone-400">{t.brew.ratio}</label>
+                      <button
+                        type="button"
+                        onClick={toggleRatioLock}
+                        className={`px-1.5 py-0.5 rounded-md text-[10px] font-semibold flex items-center gap-1 transition ${
+                          isRatioLocked
+                            ? 'bg-amber-500/20 text-amber-300 border border-amber-500/40 hover:bg-amber-500/30'
+                            : 'bg-stone-800 text-stone-400 border border-stone-700 hover:text-stone-200'
+                        }`}
+                        title={
+                          isRatioLocked
+                            ? '粉水比鎖定中：修改粉重或水量會自動等比計算'
+                            : '自由輸入模式：粉重與水量可獨立自由修改'
+                        }
+                      >
+                        {isRatioLocked ? (
+                          <>
+                            <Lock className="w-2.5 h-2.5 text-amber-400" />
+                            <span>鎖定</span>
+                          </>
+                        ) : (
+                          <>
+                            <Unlock className="w-2.5 h-2.5" />
+                            <span>自由</span>
+                          </>
+                        )}
+                      </button>
+                    </div>
+
+                    <div
+                      className={`flex items-center px-2.5 py-2 rounded-xl border transition ${
+                        isRatioLocked
+                          ? 'bg-stone-900 border-amber-500/30 text-amber-300'
+                          : 'bg-stone-900 border-stone-800 text-stone-200'
+                      }`}
+                    >
+                      <span className="font-bold mr-1 shrink-0 text-xs text-stone-400">1 :</span>
                       <input
                         type="number"
                         step="0.1"
+                        placeholder="15"
                         value={targetRatio}
                         onChange={(e) => handleRatioChange(e.target.value)}
-                        className="w-full bg-transparent text-amber-300 font-mono font-bold text-sm focus:outline-none"
+                        className={`w-full bg-transparent font-mono font-bold text-sm focus:outline-none ${
+                          isRatioLocked ? 'text-amber-300' : 'text-stone-100'
+                        }`}
                       />
                     </div>
                   </div>
 
+                  {/* 沖煮水溫 Temp */}
                   <div>
                     <label className="block text-[11px] text-stone-400 mb-1">{t.brew.waterTemp}</label>
                     <input
@@ -469,23 +535,36 @@ export const BrewSessionModal: React.FC = () => {
                   </div>
                 </div>
 
-                {/* Quick Ratio Preset Pills */}
-                <div className="flex items-center gap-1.5 px-1 overflow-x-auto no-scrollbar">
-                  <span className="text-[10px] text-stone-500 shrink-0">常用比例:</span>
-                  {[14, 15, 15.5, 16, 16.5, 17].map((r) => (
-                    <button
-                      key={r}
-                      type="button"
-                      onClick={() => handleRatioChange(r)}
-                      className={`px-2 py-0.5 rounded-lg text-[10px] font-mono transition shrink-0 ${
-                        targetRatio === r
-                          ? 'bg-amber-500/20 text-amber-300 border border-amber-500/40 font-bold'
-                          : 'bg-stone-950/60 hover:bg-stone-800 text-stone-400 border border-stone-800'
-                      }`}
-                    >
-                      1:{r}
-                    </button>
-                  ))}
+                {/* Quick Ratio Preset Pills & Mode Indicator */}
+                <div className="flex items-center justify-between px-1 text-xs gap-2 overflow-x-auto no-scrollbar">
+                  <div className="flex items-center gap-1.5 shrink-0">
+                    <span className="text-[10px] text-stone-500">
+                      {isRatioLocked ? '鎖定比例:' : '常用比例:'}
+                    </span>
+                    {[14, 15, 15.5, 16, 16.5, 17].map((r) => (
+                      <button
+                        key={r}
+                        type="button"
+                        onClick={() => {
+                          handleRatioChange(r);
+                          setIsRatioLocked(true);
+                        }}
+                        className={`px-2 py-0.5 rounded-lg text-[10px] font-mono transition shrink-0 ${
+                          targetRatio === r && isRatioLocked
+                            ? 'bg-amber-500/20 text-amber-300 border border-amber-500/40 font-bold'
+                            : 'bg-stone-950/60 hover:bg-stone-800 text-stone-400 border border-stone-800'
+                        }`}
+                      >
+                        1:{r}
+                      </button>
+                    ))}
+                  </div>
+
+                  <div className="text-[10px] text-stone-500 shrink-0 hidden sm:block">
+                    {isRatioLocked
+                      ? '💡 比例鎖定中：修改粉重即自動等比縮放水量與注水段'
+                      : '💡 自由模式：可隨意手動填寫粉重與水量'}
+                  </div>
                 </div>
               </div>
 
