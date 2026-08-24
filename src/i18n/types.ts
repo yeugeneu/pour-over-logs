@@ -148,6 +148,11 @@ export interface Translations {
     emailPlaceholder: string;
     sendMagicLink: string;
     linkSent: string;
+    otpCode: string;
+    otpPlaceholder: string;
+    verifyOtp: string;
+    enterOtpHint: string;
+    resendEmail: string;
     customConfig: string;
     supabaseUrl: string;
     supabaseAnonKey: string;

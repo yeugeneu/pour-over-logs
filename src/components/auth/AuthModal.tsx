@@ -5,6 +5,7 @@ import {
   signInWithApple,
   signInWithGoogle,
   signInWithMagicLink,
+  verifyEmailOtp,
   signOut,
 } from '../../services/authService';
 import {
@@ -20,6 +21,7 @@ import {
   UploadCloud,
   LogOut,
   Mail,
+  KeyRound,
 } from 'lucide-react';
 
 export const AuthModal: React.FC = () => {
@@ -38,6 +40,8 @@ export const AuthModal: React.FC = () => {
 
   const [activeTab, setActiveTab] = useState<'login' | 'config'>('login');
   const [emailInput, setEmailInput] = useState('');
+  const [otpInput, setOtpInput] = useState('');
+  const [isOtpSent, setIsOtpSent] = useState(false);
   const [feedback, setFeedback] = useState<{ type: 'success' | 'error'; message: string } | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -80,12 +84,37 @@ export const AuthModal: React.FC = () => {
     if (error) {
       setFeedback({ type: 'error', message: error.message });
     } else {
+      setIsOtpSent(true);
       setFeedback({ type: 'success', message: t.auth.linkSent });
+    }
+  };
+
+  const handleVerifyOtp = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!emailInput.trim() || !otpInput.trim()) return;
+
+    setIsSubmitting(true);
+    setFeedback(null);
+    const { error } = await verifyEmailOtp(emailInput.trim(), otpInput.trim());
+    setIsSubmitting(false);
+
+    if (error) {
+      setFeedback({ type: 'error', message: error.message });
+    } else {
+      setFeedback({
+        type: 'success',
+        message: language === 'zh-TW' ? '驗證成功！已成功登入。' : 'Verification successful! Logged in.',
+      });
+      setTimeout(() => {
+        closeAuthModal();
+      }, 800);
     }
   };
 
   const handleSignOut = async () => {
     await signOut();
+    setIsOtpSent(false);
+    setOtpInput('');
     setFeedback({
       type: 'success',
       message: language === 'zh-TW' ? '已成功登出帳號' : 'Signed out successfully',
@@ -294,33 +323,87 @@ export const AuthModal: React.FC = () => {
                     <div className="flex-1 border-t border-stone-800" />
                   </div>
 
-                  {/* Magic Link Form */}
-                  <form onSubmit={handleMagicLink} className="space-y-2.5">
-                    <div>
-                      <label className="block text-xs font-semibold text-stone-300 mb-1">
-                        {t.auth.magicLink}
-                      </label>
-                      <div className="relative">
-                        <Mail className="w-4 h-4 text-stone-500 absolute left-3 top-1/2 -translate-y-1/2" />
-                        <input
-                          type="email"
-                          required
-                          value={emailInput}
-                          onChange={(e) => setEmailInput(e.target.value)}
-                          placeholder={t.auth.emailPlaceholder}
-                          className="w-full bg-stone-950 text-stone-100 text-xs pl-9 pr-3 py-2.5 rounded-xl border border-stone-800 focus:border-amber-500 focus:outline-none"
-                        />
+                  {/* Magic Link & OTP Verification Form */}
+                  {!isOtpSent ? (
+                    /* Step 1: Send Magic Link / OTP */
+                    <form onSubmit={handleMagicLink} className="space-y-2.5">
+                      <div>
+                        <label className="block text-xs font-semibold text-stone-300 mb-1">
+                          {t.auth.magicLink}
+                        </label>
+                        <div className="relative">
+                          <Mail className="w-4 h-4 text-stone-500 absolute left-3 top-1/2 -translate-y-1/2" />
+                          <input
+                            type="email"
+                            required
+                            value={emailInput}
+                            onChange={(e) => setEmailInput(e.target.value)}
+                            placeholder={t.auth.emailPlaceholder}
+                            className="w-full bg-stone-950 text-stone-100 text-xs pl-9 pr-3 py-2.5 rounded-xl border border-stone-800 focus:border-amber-500 focus:outline-none"
+                          />
+                        </div>
                       </div>
-                    </div>
 
-                    <button
-                      type="submit"
-                      disabled={isSubmitting || !emailInput.trim()}
-                      className="w-full py-2.5 rounded-xl bg-stone-800 hover:bg-stone-700 text-stone-200 font-bold text-xs border border-stone-700 transition disabled:opacity-50"
-                    >
-                      {t.auth.sendMagicLink}
-                    </button>
-                  </form>
+                      <button
+                        type="submit"
+                        disabled={isSubmitting || !emailInput.trim()}
+                        className="w-full py-2.5 rounded-xl bg-stone-800 hover:bg-stone-700 text-stone-200 font-bold text-xs border border-stone-700 transition disabled:opacity-50"
+                      >
+                        {t.auth.sendMagicLink}
+                      </button>
+                    </form>
+                  ) : (
+                    /* Step 2: Enter 6-digit OTP Code directly in PWA */
+                    <form onSubmit={handleVerifyOtp} className="space-y-3 bg-stone-950/60 p-3.5 rounded-2xl border border-stone-800">
+                      <div>
+                        <div className="flex items-center justify-between mb-1">
+                          <label className="block text-xs font-semibold text-stone-300">
+                            {t.auth.otpCode}
+                          </label>
+                          <span className="text-[11px] text-amber-400 font-mono truncate max-w-[180px]">{emailInput}</span>
+                        </div>
+                        <div className="relative">
+                          <KeyRound className="w-4 h-4 text-amber-400 absolute left-3 top-1/2 -translate-y-1/2" />
+                          <input
+                            type="text"
+                            inputMode="numeric"
+                            pattern="[0-9]*"
+                            maxLength={8}
+                            autoFocus
+                            required
+                            value={otpInput}
+                            onChange={(e) => setOtpInput(e.target.value.trim())}
+                            placeholder={t.auth.otpPlaceholder}
+                            className="w-full bg-stone-900 text-amber-300 font-mono tracking-widest text-center text-base pl-9 pr-3 py-2 rounded-xl border border-amber-500/40 focus:border-amber-500 focus:outline-none"
+                          />
+                        </div>
+                      </div>
+
+                      <p className="text-[11px] text-stone-400 leading-relaxed">
+                        {t.auth.enterOtpHint}
+                      </p>
+
+                      <div className="flex items-center gap-2 pt-1">
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setIsOtpSent(false);
+                            setOtpInput('');
+                          }}
+                          className="px-3 py-2.5 rounded-xl bg-stone-800 hover:bg-stone-700 text-stone-400 hover:text-stone-200 text-xs font-medium border border-stone-700 transition shrink-0"
+                        >
+                          {t.auth.resendEmail}
+                        </button>
+                        <button
+                          type="submit"
+                          disabled={isSubmitting || !otpInput.trim()}
+                          className="flex-1 py-2.5 rounded-xl bg-gradient-to-r from-amber-600 to-amber-500 hover:from-amber-500 hover:to-amber-400 text-white font-bold text-xs shadow-md transition disabled:opacity-50"
+                        >
+                          {t.auth.verifyOtp}
+                        </button>
+                      </div>
+                    </form>
+                  )}
                 </div>
               )}
             </>

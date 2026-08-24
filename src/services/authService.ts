@@ -44,13 +44,28 @@ export async function signInWithMagicLink(email: string): Promise<{ error: Error
   }
 
   const { error } = await supabase.auth.signInWithOtp({
-    email,
+    email: email.trim(),
     options: {
       emailRedirectTo: window.location.origin,
     },
   });
 
   return { error };
+}
+
+export async function verifyEmailOtp(email: string, token: string): Promise<{ error: Error | null; user?: User | null }> {
+  const supabase = getSupabase();
+  if (!supabase) {
+    return { error: new Error('Supabase is not configured. Please enter your project credentials.') };
+  }
+
+  const { data, error } = await supabase.auth.verifyOtp({
+    email: email.trim(),
+    token: token.trim(),
+    type: 'email',
+  });
+
+  return { error, user: data?.user || null };
 }
 
 export async function signOut(): Promise<{ error: Error | null }> {
