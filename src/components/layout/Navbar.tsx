@@ -1,11 +1,13 @@
 import React from 'react';
 import { useCoffee } from '../../context/CoffeeContext';
+import { useTheme } from '../../context/ThemeContext';
 import { useI18n } from '../../i18n';
-import { Coffee, Flame, Plus, Sparkles, TrendingUp, History, Database, Layers } from 'lucide-react';
+import { Coffee, Flame, Plus, Sparkles, TrendingUp, History, Database, Layers, Palette } from 'lucide-react';
 import { SyncStatusBadge } from '../auth/SyncStatusBadge';
 
 export const Navbar: React.FC = () => {
   const { beans, logs, activeTab, setActiveTab, openBrewModal, openBeanModal } = useCoffee();
+  const { openThemeModal, currentThemeInfo } = useTheme();
   const { language, setLanguage, t } = useI18n();
 
   const totalBeans = beans.length;
@@ -66,6 +68,16 @@ export const Navbar: React.FC = () => {
           <div className="flex items-center space-x-1.5 sm:space-x-2.5 shrink-0">
             {/* Cloud Sync / Auth Status Badge */}
             <SyncStatusBadge />
+
+            {/* Theme Switcher Button */}
+            <button
+              onClick={openThemeModal}
+              className="shrink-0 p-1.5 sm:px-2 sm:py-1.5 text-xs font-semibold rounded-xl bg-stone-900 hover:bg-stone-800 text-stone-300 hover:text-white border border-stone-800 transition flex items-center gap-1 shadow-sm"
+              title={language === 'zh-TW' ? `視覺風格主題 (${currentThemeInfo.nameZh})` : `Theme: ${currentThemeInfo.nameEn}`}
+            >
+              <Palette className="w-3.5 h-3.5 text-amber-400" />
+              <span className="hidden sm:inline text-[11px]">{currentThemeInfo.emoji}</span>
+            </button>
 
             {/* Language Switch Button */}
             <button

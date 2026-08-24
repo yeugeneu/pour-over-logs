@@ -1,11 +1,13 @@
 import React, { useRef, useState } from 'react';
 import { useCoffee } from '../../context/CoffeeContext';
+import { useTheme, THEMES } from '../../context/ThemeContext';
 import { useI18n } from '../../i18n';
 import { exportBackupJSON, exportLogsToCSV, parseAndValidateBackupJSON } from '../../utils/exportUtils';
-import { Database, Download, FileSpreadsheet, RotateCcw, Upload, CheckCircle2, AlertCircle, HardDrive } from 'lucide-react';
+import { Database, Download, FileSpreadsheet, RotateCcw, Upload, CheckCircle2, AlertCircle, HardDrive, Palette } from 'lucide-react';
 
 export const BackupModal: React.FC = () => {
   const { beans, logs, resetToSampleData, restoreFromBackup } = useCoffee();
+  const { theme, setTheme, openThemeModal, currentThemeInfo } = useTheme();
   const { language, t } = useI18n();
 
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -138,6 +140,52 @@ export const BackupModal: React.FC = () => {
 
       {/* Backup & Export Action Cards */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        {/* Visual Theme Card */}
+        <div className="p-5 rounded-3xl bg-stone-900/90 border border-stone-800 space-y-3 flex flex-col justify-between md:col-span-2">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+            <div className="space-y-1">
+              <div className="flex items-center space-x-2 text-amber-400 font-bold text-sm">
+                <Palette className="w-4 h-4" />
+                <span>{language === 'zh-TW' ? '🎨 視覺風格主題 (Visual Themes)' : '🎨 App Visual Theme'}</span>
+              </div>
+              <p className="text-xs text-stone-400">
+                {language === 'zh-TW'
+                  ? `當前風格：${currentThemeInfo.nameZh} (${currentThemeInfo.emoji}) • ${currentThemeInfo.descriptionZh}`
+                  : `Active Theme: ${currentThemeInfo.nameEn} (${currentThemeInfo.emoji}) • ${currentThemeInfo.descriptionEn}`}
+              </p>
+            </div>
+
+            <button
+              type="button"
+              onClick={openThemeModal}
+              className="py-2 px-4 rounded-xl bg-gradient-to-r from-amber-600 to-amber-500 hover:from-amber-500 hover:to-amber-400 text-white font-bold text-xs shadow-md transition shrink-0"
+            >
+              {language === 'zh-TW' ? '更換主題' : 'Change Theme'}
+            </button>
+          </div>
+
+          <div className="grid grid-cols-2 sm:grid-cols-5 gap-2 pt-1">
+            {THEMES.map((t) => (
+              <button
+                key={t.id}
+                type="button"
+                onClick={() => setTheme(t.id)}
+                className={`p-2.5 rounded-xl border text-xs text-left transition flex flex-col gap-1.5 ${
+                  theme === t.id
+                    ? 'border-amber-500 bg-amber-500/10 font-bold text-amber-300'
+                    : 'border-stone-800 bg-stone-950/60 text-stone-400 hover:border-stone-700'
+                }`}
+              >
+                <div className="flex items-center justify-between">
+                  <span>{t.emoji}</span>
+                  <div className="w-3 h-3 rounded-full border border-white/20" style={{ backgroundColor: t.primaryColor }} />
+                </div>
+                <span className="truncate text-[11px] font-medium">{language === 'zh-TW' ? t.nameZh : t.nameEn}</span>
+              </button>
+            ))}
+          </div>
+        </div>
+
         {/* Export JSON Card */}
         <div className="p-5 rounded-3xl bg-stone-900/90 border border-stone-800 space-y-3 flex flex-col justify-between">
           <div className="space-y-1">
