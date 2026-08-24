@@ -33,6 +33,10 @@ interface CoffeeContextType {
   isAuthModalOpen: boolean;
   openAuthModal: () => void;
   closeAuthModal: () => void;
+
+  isResetPasswordModalOpen: boolean;
+  openResetPasswordModal: () => void;
+  closeResetPasswordModal: () => void;
   syncWithCloud: () => Promise<void>;
   migrateLocalToCloud: () => Promise<{ success: boolean; count: number; error?: string }>;
   
@@ -111,6 +115,7 @@ export const CoffeeProvider: React.FC<{ children: React.ReactNode }> = ({ childr
     return localStorage.getItem(STORAGE_KEYS.LAST_SYNC);
   });
   const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
+  const [isResetPasswordModalOpen, setIsResetPasswordModalOpen] = useState(false);
 
   const { isConfigured: isCloudConfigured } = getSupabaseCredentials();
 
@@ -146,6 +151,9 @@ export const CoffeeProvider: React.FC<{ children: React.ReactNode }> = ({ childr
 
   const openAuthModal = () => setIsAuthModalOpen(true);
   const closeAuthModal = () => setIsAuthModalOpen(false);
+
+  const openResetPasswordModal = () => setIsResetPasswordModalOpen(true);
+  const closeResetPasswordModal = () => setIsResetPasswordModalOpen(false);
 
   // Sync with Cloud
   const syncWithCloud = useCallback(async () => {
@@ -208,6 +216,14 @@ export const CoffeeProvider: React.FC<{ children: React.ReactNode }> = ({ childr
 
   // Initial Auth & Realtime setup
   useEffect(() => {
+    // Check if user arrived via Supabase Password Recovery link
+    if (
+      window.location.hash.includes('type=recovery') ||
+      window.location.search.includes('type=recovery')
+    ) {
+      setIsResetPasswordModalOpen(true);
+    }
+
     const supabase = getSupabase();
     if (!supabase) {
       setSyncStatus('local');
@@ -223,7 +239,11 @@ export const CoffeeProvider: React.FC<{ children: React.ReactNode }> = ({ childr
       }
     });
 
-    const { data: authListener } = supabase.auth.onAuthStateChange(async (_event, session) => {
+    const { data: authListener } = supabase.auth.onAuthStateChange(async (event, session) => {
+      if (event === 'PASSWORD_RECOVERY') {
+        setIsResetPasswordModalOpen(true);
+      }
+
       const currentUser = session?.user || null;
       setUser(currentUser);
       if (currentUser) {
@@ -455,6 +475,9 @@ export const CoffeeProvider: React.FC<{ children: React.ReactNode }> = ({ childr
         isAuthModalOpen,
         openAuthModal,
         closeAuthModal,
+        isResetPasswordModalOpen,
+        openResetPasswordModal,
+        closeResetPasswordModal,
         syncWithCloud,
         migrateLocalToCloud,
         isBrewModalOpen,

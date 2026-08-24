@@ -9,6 +9,7 @@ import { TrendsDashboard } from './components/analytics/TrendsDashboard';
 import { BrewHistoryList } from './components/history/BrewHistoryList';
 import { BackupModal } from './components/backup/BackupModal';
 import { AuthModal } from './components/auth/AuthModal';
+import { ResetPasswordModal } from './components/auth/ResetPasswordModal';
 import { Coffee, Heart } from 'lucide-react';
 
 export const App: React.FC = () => {
@@ -32,6 +33,7 @@ export const App: React.FC = () => {
       <BeanModal />
       <BeanDetailModal />
       <AuthModal />
+      <ResetPasswordModal />
 
       {/* App Footer */}
       <footer className="border-t border-stone-900 bg-stone-950/80 py-6 text-center text-xs text-stone-500">
