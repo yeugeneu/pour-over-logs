@@ -470,30 +470,30 @@ export const BrewSessionModal: React.FC = () => {
                   {/* 粉水比 Ratio with Interactive Lock */}
                   <div>
                     <div className="flex items-center justify-between mb-1">
-                      <label className="block text-[11px] text-stone-400">{t.brew.ratio}</label>
+                      <label className="block text-[11px] font-semibold text-stone-300">{t.brew.ratio}</label>
                       <button
                         type="button"
                         onClick={toggleRatioLock}
-                        className={`px-1.5 py-0.5 rounded-md text-[10px] font-semibold flex items-center gap-1 transition ${
+                        className={`px-2 py-0.5 rounded-lg text-[11px] font-bold flex items-center gap-1 transition shadow-sm active:scale-95 ${
                           isRatioLocked
-                            ? 'bg-amber-500/20 text-amber-300 border border-amber-500/40 hover:bg-amber-500/30'
-                            : 'bg-stone-800 text-stone-400 border border-stone-700 hover:text-stone-200'
+                            ? 'bg-amber-500 text-stone-950 ring-2 ring-amber-400/40 hover:bg-amber-400'
+                            : 'bg-stone-800 text-stone-300 border border-stone-600 hover:bg-stone-700 hover:text-stone-100'
                         }`}
                         title={
                           isRatioLocked
-                            ? '粉水比鎖定中：修改粉重或水量會自動等比計算'
-                            : '自由輸入模式：粉重與水量可獨立自由修改'
+                            ? (language === 'zh-TW' ? '比例鎖定中：修改粉重即自動等比計算水量' : 'Ratio locked: Scaling dose recalculates water')
+                            : (language === 'zh-TW' ? '自由模式：粉重與水量可獨立手動輸入' : 'Free mode: Dose and water can be edited independently')
                         }
                       >
                         {isRatioLocked ? (
                           <>
-                            <Lock className="w-2.5 h-2.5 text-amber-400" />
-                            <span>鎖定</span>
+                            <Lock className="w-3 h-3 stroke-[2.5]" />
+                            <span>{language === 'zh-TW' ? '已鎖定' : 'Locked'}</span>
                           </>
                         ) : (
                           <>
-                            <Unlock className="w-2.5 h-2.5" />
-                            <span>自由</span>
+                            <Unlock className="w-3 h-3 text-stone-400 stroke-[2]" />
+                            <span>{language === 'zh-TW' ? '自由' : 'Free'}</span>
                           </>
                         )}
                       </button>
@@ -502,7 +502,7 @@ export const BrewSessionModal: React.FC = () => {
                     <div
                       className={`flex items-center px-2.5 py-2 rounded-xl border transition ${
                         isRatioLocked
-                          ? 'bg-stone-900 border-amber-500/30 text-amber-300'
+                          ? 'bg-stone-900 border-amber-500/60 ring-1 ring-amber-500/30 text-amber-300 shadow-sm'
                           : 'bg-stone-900 border-stone-800 text-stone-200'
                       }`}
                     >
