@@ -164,25 +164,58 @@ export const BackupModal: React.FC = () => {
             </button>
           </div>
 
-          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-3 xl:grid-cols-5 gap-2 pt-1">
-            {THEMES.map((t) => (
-              <button
-                key={t.id}
-                type="button"
-                onClick={() => setTheme(t.id)}
-                className={`p-2.5 rounded-xl border text-xs text-left transition flex flex-col gap-1.5 ${
-                  theme === t.id
-                    ? 'border-amber-500 bg-amber-500/10 font-bold text-amber-300'
-                    : 'border-stone-800 bg-stone-950/60 text-stone-400 hover:border-stone-700'
-                }`}
-              >
-                <div className="flex items-center justify-between">
-                  <span>{t.emoji}</span>
-                  <div className="w-3 h-3 rounded-full border border-white/20" style={{ backgroundColor: t.primaryColor }} />
-                </div>
-                <span className="truncate text-[11px] font-medium">{language === 'zh-TW' ? t.nameZh : t.nameEn}</span>
-              </button>
-            ))}
+          {/* Light Themes */}
+          <div className="space-y-1.5 pt-1">
+            <div className="text-[11px] font-semibold text-amber-400 flex items-center gap-1">
+              <span>☀️ {language === 'zh-TW' ? '明亮晨光主題 (Light Mode)' : 'Light Mode Themes'}</span>
+            </div>
+            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-2">
+              {THEMES.filter((t) => t.mode === 'light').map((t) => (
+                <button
+                  key={t.id}
+                  type="button"
+                  onClick={() => setTheme(t.id)}
+                  className={`p-2.5 rounded-xl border text-xs text-left transition flex flex-col gap-1.5 ${
+                    theme === t.id
+                      ? 'border-amber-500 bg-amber-500/10 font-bold text-amber-300 ring-1 ring-amber-500/30'
+                      : 'border-stone-800 bg-stone-950/60 text-stone-400 hover:border-stone-700'
+                  }`}
+                >
+                  <div className="flex items-center justify-between">
+                    <span>{t.emoji}</span>
+                    <div className="w-3 h-3 rounded-full border border-white/20" style={{ backgroundColor: t.primaryColor }} />
+                  </div>
+                  <span className="truncate text-[11px] font-medium">{language === 'zh-TW' ? t.nameZh.replace(' (Sakura Light)', '').replace(' (Matcha Light)', '').replace(' (Citrus Light)', '').replace(' (Glacier Light)', '').replace(' (Lavender Light)', '').replace(' (Oat Milk Light)', '') : t.nameEn}</span>
+                </button>
+              ))}
+            </div>
+          </div>
+
+          {/* Dark Themes */}
+          <div className="space-y-1.5 pt-2">
+            <div className="text-[11px] font-semibold text-stone-400 flex items-center gap-1">
+              <span>🌙 {language === 'zh-TW' ? '夜間風味主題 (Dark Mode)' : 'Dark Mode Themes'}</span>
+            </div>
+            <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-8 gap-2">
+              {THEMES.filter((t) => t.mode === 'dark').map((t) => (
+                <button
+                  key={t.id}
+                  type="button"
+                  onClick={() => setTheme(t.id)}
+                  className={`p-2.5 rounded-xl border text-xs text-left transition flex flex-col gap-1.5 ${
+                    theme === t.id
+                      ? 'border-amber-500 bg-amber-500/10 font-bold text-amber-300 ring-1 ring-amber-500/30'
+                      : 'border-stone-800 bg-stone-950/60 text-stone-400 hover:border-stone-700'
+                  }`}
+                >
+                  <div className="flex items-center justify-between">
+                    <span>{t.emoji}</span>
+                    <div className="w-3 h-3 rounded-full border border-white/20" style={{ backgroundColor: t.primaryColor }} />
+                  </div>
+                  <span className="truncate text-[11px] font-medium">{language === 'zh-TW' ? t.nameZh.replace(' (Dark)', '') : t.nameEn.replace(' (Dark)', '')}</span>
+                </button>
+              ))}
+            </div>
           </div>
         </div>
 

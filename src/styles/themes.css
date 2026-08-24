@@ -1,9 +1,389 @@
 /* ============================================================
-   BrewLog Multi-Theme System Styles (9 Specialty Coffee Themes)
+   BrewLog Multi-Theme System Styles (14 Handcrafted Themes)
+   ============================================================ */
+
+/* ============================================================
+   ☀️ SECTION A: LIGHT MODE BASE THEMES
+   ============================================================ */
+
+/* Common light mode text & surface resets */
+[data-theme="sakura-light"] body,
+[data-theme="matcha-light"] body,
+[data-theme="citrus-light"] body,
+[data-theme="nordic-ice-light"] body,
+[data-theme="lavender-light"] body,
+[data-theme="oat-daylight"] body {
+  color: #1c1917 !important;
+}
+
+[data-theme="sakura-light"] .bg-stone-900,
+[data-theme="matcha-light"] .bg-stone-900,
+[data-theme="citrus-light"] .bg-stone-900,
+[data-theme="nordic-ice-light"] .bg-stone-900,
+[data-theme="lavender-light"] .bg-stone-900,
+[data-theme="oat-daylight"] .bg-stone-900 {
+  background-color: #ffffff !important;
+  color: #1c1917 !important;
+}
+
+[data-theme="sakura-light"] .text-stone-100,
+[data-theme="matcha-light"] .text-stone-100,
+[data-theme="citrus-light"] .text-stone-100,
+[data-theme="nordic-ice-light"] .text-stone-100,
+[data-theme="lavender-light"] .text-stone-100,
+[data-theme="oat-daylight"] .text-stone-100 {
+  color: #111827 !important;
+}
+
+[data-theme="sakura-light"] .text-stone-200,
+[data-theme="matcha-light"] .text-stone-200,
+[data-theme="citrus-light"] .text-stone-200,
+[data-theme="nordic-ice-light"] .text-stone-200,
+[data-theme="lavender-light"] .text-stone-200,
+[data-theme="oat-daylight"] .text-stone-200 {
+  color: #1f2937 !important;
+}
+
+[data-theme="sakura-light"] .text-stone-300,
+[data-theme="matcha-light"] .text-stone-300,
+[data-theme="citrus-light"] .text-stone-300,
+[data-theme="nordic-ice-light"] .text-stone-300,
+[data-theme="lavender-light"] .text-stone-300,
+[data-theme="oat-daylight"] .text-stone-300 {
+  color: #374151 !important;
+}
+
+[data-theme="sakura-light"] .text-stone-400,
+[data-theme="matcha-light"] .text-stone-400,
+[data-theme="citrus-light"] .text-stone-400,
+[data-theme="nordic-ice-light"] .text-stone-400,
+[data-theme="lavender-light"] .text-stone-400,
+[data-theme="oat-daylight"] .text-stone-400 {
+  color: #4b5563 !important;
+}
+
+[data-theme="sakura-light"] .text-stone-500,
+[data-theme="matcha-light"] .text-stone-500,
+[data-theme="citrus-light"] .text-stone-500,
+[data-theme="nordic-ice-light"] .text-stone-500,
+[data-theme="lavender-light"] .text-stone-500,
+[data-theme="oat-daylight"] .text-stone-500 {
+  color: #6b7280 !important;
+}
+
+[data-theme="sakura-light"] header,
+[data-theme="matcha-light"] header,
+[data-theme="citrus-light"] header,
+[data-theme="nordic-ice-light"] header,
+[data-theme="lavender-light"] header,
+[data-theme="oat-daylight"] header {
+  background-color: rgba(255, 255, 255, 0.92) !important;
+}
+
+[data-theme="sakura-light"] input:not([type="checkbox"]):not([type="radio"]),
+[data-theme="matcha-light"] input:not([type="checkbox"]):not([type="radio"]),
+[data-theme="citrus-light"] input:not([type="checkbox"]):not([type="radio"]),
+[data-theme="nordic-ice-light"] input:not([type="checkbox"]):not([type="radio"]),
+[data-theme="lavender-light"] input:not([type="checkbox"]):not([type="radio"]),
+[data-theme="oat-daylight"] input:not([type="checkbox"]):not([type="radio"]),
+[data-theme="sakura-light"] select,
+[data-theme="matcha-light"] select,
+[data-theme="citrus-light"] select,
+[data-theme="nordic-ice-light"] select,
+[data-theme="lavender-light"] select,
+[data-theme="oat-daylight"] select,
+[data-theme="sakura-light"] textarea,
+[data-theme="matcha-light"] textarea,
+[data-theme="citrus-light"] textarea,
+[data-theme="nordic-ice-light"] textarea,
+[data-theme="lavender-light"] textarea,
+[data-theme="oat-daylight"] textarea {
+  background-color: #ffffff !important;
+  color: #111827 !important;
+}
+
+/* ------------------------------------------------------------
+   A1. SAKURA BLOSSOM & WHITE PEACH (🌸 櫻花白桃晨光 - LIGHT)
+   ------------------------------------------------------------ */
+[data-theme="sakura-light"] {
+  --theme-accent: #e11d48;
+}
+[data-theme="sakura-light"] body,
+[data-theme="sakura-light"] .bg-stone-950 {
+  background-color: #fdf8f9 !important;
+}
+[data-theme="sakura-light"] .bg-stone-800 {
+  background-color: #faedf2 !important;
+}
+[data-theme="sakura-light"] .border-stone-800,
+[data-theme="sakura-light"] .border-stone-800\/60,
+[data-theme="sakura-light"] .border-stone-800\/80 {
+  border-color: #f3d7e2 !important;
+}
+[data-theme="sakura-light"] .border-stone-700 {
+  border-color: #e8bfd1 !important;
+}
+[data-theme="sakura-light"] .text-amber-200 { color: #be123c !important; }
+[data-theme="sakura-light"] .text-amber-300 { color: #e11d48 !important; }
+[data-theme="sakura-light"] .text-amber-400 { color: #f43f5e !important; }
+[data-theme="sakura-light"] .text-amber-500 { color: #e11d48 !important; }
+[data-theme="sakura-light"] .text-amber-600 { color: #be123c !important; }
+[data-theme="sakura-light"] .bg-amber-500 { background-color: #e11d48 !important; }
+[data-theme="sakura-light"] .bg-amber-600 { background-color: #be123c !important; }
+[data-theme="sakura-light"] .border-amber-500 { border-color: #e11d48 !important; }
+[data-theme="sakura-light"] .bg-amber-500\/5 { background-color: rgba(225, 29, 72, 0.05) !important; }
+[data-theme="sakura-light"] .bg-amber-500\/10 { background-color: rgba(225, 29, 72, 0.09) !important; }
+[data-theme="sakura-light"] .bg-amber-500\/20 { background-color: rgba(225, 29, 72, 0.16) !important; }
+[data-theme="sakura-light"] .bg-amber-500\/30 { background-color: rgba(225, 29, 72, 0.24) !important; }
+[data-theme="sakura-light"] .border-amber-500\/20 { border-color: rgba(225, 29, 72, 0.25) !important; }
+[data-theme="sakura-light"] .border-amber-500\/30 { border-color: rgba(225, 29, 72, 0.35) !important; }
+[data-theme="sakura-light"] .border-amber-500\/40 { border-color: rgba(225, 29, 72, 0.45) !important; }
+[data-theme="sakura-light"] .border-amber-500\/50 { border-color: rgba(225, 29, 72, 0.55) !important; }
+[data-theme="sakura-light"] .from-amber-600 { --tw-gradient-from: #be123c var(--tw-gradient-from-position) !important; }
+[data-theme="sakura-light"] .from-amber-700 { --tw-gradient-from: #9f1239 var(--tw-gradient-from-position) !important; }
+[data-theme="sakura-light"] .to-amber-500 { --tw-gradient-to: #e11d48 var(--tw-gradient-to-position) !important; }
+[data-theme="sakura-light"] .to-amber-400 { --tw-gradient-to: #fb7185 var(--tw-gradient-to-position) !important; }
+[data-theme="sakura-light"] .via-amber-400 { --tw-gradient-stops: var(--tw-gradient-from), #fb7185 var(--tw-gradient-via-position), var(--tw-gradient-to) !important; }
+[data-theme="sakura-light"] .coffee-glow { box-shadow: 0 0 25px -5px rgba(225, 29, 72, 0.15) !important; }
+[data-theme="sakura-light"] .coffee-card-gradient { background: linear-gradient(145deg, #ffffff 0%, #fdf4f7 100%) !important; }
+
+
+/* ------------------------------------------------------------
+   A2. KYOTO MATCHA & JADE (🍵 京都抹茶與白瓷 - LIGHT)
+   ------------------------------------------------------------ */
+[data-theme="matcha-light"] {
+  --theme-accent: #059669;
+}
+[data-theme="matcha-light"] body,
+[data-theme="matcha-light"] .bg-stone-950 {
+  background-color: #f4f9f6 !important;
+}
+[data-theme="matcha-light"] .bg-stone-800 {
+  background-color: #e8f4ed !important;
+}
+[data-theme="matcha-light"] .border-stone-800,
+[data-theme="matcha-light"] .border-stone-800\/60,
+[data-theme="matcha-light"] .border-stone-800\/80 {
+  border-color: #cbe5d5 !important;
+}
+[data-theme="matcha-light"] .border-stone-700 {
+  border-color: #b2d7c0 !important;
+}
+[data-theme="matcha-light"] .text-amber-200 { color: #047857 !important; }
+[data-theme="matcha-light"] .text-amber-300 { color: #059669 !important; }
+[data-theme="matcha-light"] .text-amber-400 { color: #10b981 !important; }
+[data-theme="matcha-light"] .text-amber-500 { color: #059669 !important; }
+[data-theme="matcha-light"] .text-amber-600 { color: #047857 !important; }
+[data-theme="matcha-light"] .bg-amber-500 { background-color: #059669 !important; }
+[data-theme="matcha-light"] .bg-amber-600 { background-color: #047857 !important; }
+[data-theme="matcha-light"] .border-amber-500 { border-color: #059669 !important; }
+[data-theme="matcha-light"] .bg-amber-500\/5 { background-color: rgba(5, 150, 105, 0.05) !important; }
+[data-theme="matcha-light"] .bg-amber-500\/10 { background-color: rgba(5, 150, 105, 0.09) !important; }
+[data-theme="matcha-light"] .bg-amber-500\/20 { background-color: rgba(5, 150, 105, 0.16) !important; }
+[data-theme="matcha-light"] .bg-amber-500\/30 { background-color: rgba(5, 150, 105, 0.24) !important; }
+[data-theme="matcha-light"] .border-amber-500\/20 { border-color: rgba(5, 150, 105, 0.25) !important; }
+[data-theme="matcha-light"] .border-amber-500\/30 { border-color: rgba(5, 150, 105, 0.35) !important; }
+[data-theme="matcha-light"] .border-amber-500\/40 { border-color: rgba(5, 150, 105, 0.45) !important; }
+[data-theme="matcha-light"] .border-amber-500\/50 { border-color: rgba(5, 150, 105, 0.55) !important; }
+[data-theme="matcha-light"] .from-amber-600 { --tw-gradient-from: #047857 var(--tw-gradient-from-position) !important; }
+[data-theme="matcha-light"] .from-amber-700 { --tw-gradient-from: #065f46 var(--tw-gradient-from-position) !important; }
+[data-theme="matcha-light"] .to-amber-500 { --tw-gradient-to: #059669 var(--tw-gradient-to-position) !important; }
+[data-theme="matcha-light"] .to-amber-400 { --tw-gradient-to: #34d399 var(--tw-gradient-to-position) !important; }
+[data-theme="matcha-light"] .via-amber-400 { --tw-gradient-stops: var(--tw-gradient-from), #34d399 var(--tw-gradient-via-position), var(--tw-gradient-to) !important; }
+[data-theme="matcha-light"] .coffee-glow { box-shadow: 0 0 25px -5px rgba(5, 150, 105, 0.15) !important; }
+[data-theme="matcha-light"] .coffee-card-gradient { background: linear-gradient(145deg, #ffffff 0%, #f0f7f3 100%) !important; }
+
+
+/* ------------------------------------------------------------
+   A3. SICILIAN LEMON & CITRUS (🍋 西西里檸檬冰咖啡 - LIGHT)
+   ------------------------------------------------------------ */
+[data-theme="citrus-light"] {
+  --theme-accent: #d97706;
+}
+[data-theme="citrus-light"] body,
+[data-theme="citrus-light"] .bg-stone-950 {
+  background-color: #fefdf6 !important;
+}
+[data-theme="citrus-light"] .bg-stone-800 {
+  background-color: #fbf6df !important;
+}
+[data-theme="citrus-light"] .border-stone-800,
+[data-theme="citrus-light"] .border-stone-800\/60,
+[data-theme="citrus-light"] .border-stone-800\/80 {
+  border-color: #faebba !important;
+}
+[data-theme="citrus-light"] .border-stone-700 {
+  border-color: #f3dc98 !important;
+}
+[data-theme="citrus-light"] .text-amber-200 { color: #b45309 !important; }
+[data-theme="citrus-light"] .text-amber-300 { color: #d97706 !important; }
+[data-theme="citrus-light"] .text-amber-400 { color: #eab308 !important; }
+[data-theme="citrus-light"] .text-amber-500 { color: #d97706 !important; }
+[data-theme="citrus-light"] .text-amber-600 { color: #b45309 !important; }
+[data-theme="citrus-light"] .bg-amber-500 { background-color: #d97706 !important; }
+[data-theme="citrus-light"] .bg-amber-600 { background-color: #b45309 !important; }
+[data-theme="citrus-light"] .border-amber-500 { border-color: #d97706 !important; }
+[data-theme="citrus-light"] .bg-amber-500\/5 { background-color: rgba(217, 119, 6, 0.05) !important; }
+[data-theme="citrus-light"] .bg-amber-500\/10 { background-color: rgba(217, 119, 6, 0.09) !important; }
+[data-theme="citrus-light"] .bg-amber-500\/20 { background-color: rgba(217, 119, 6, 0.16) !important; }
+[data-theme="citrus-light"] .bg-amber-500\/30 { background-color: rgba(217, 119, 6, 0.24) !important; }
+[data-theme="citrus-light"] .border-amber-500\/20 { border-color: rgba(217, 119, 6, 0.25) !important; }
+[data-theme="citrus-light"] .border-amber-500\/30 { border-color: rgba(217, 119, 6, 0.35) !important; }
+[data-theme="citrus-light"] .border-amber-500\/40 { border-color: rgba(217, 119, 6, 0.45) !important; }
+[data-theme="citrus-light"] .border-amber-500\/50 { border-color: rgba(217, 119, 6, 0.55) !important; }
+[data-theme="citrus-light"] .from-amber-600 { --tw-gradient-from: #b45309 var(--tw-gradient-from-position) !important; }
+[data-theme="citrus-light"] .from-amber-700 { --tw-gradient-from: #92400e var(--tw-gradient-from-position) !important; }
+[data-theme="citrus-light"] .to-amber-500 { --tw-gradient-to: #d97706 var(--tw-gradient-to-position) !important; }
+[data-theme="citrus-light"] .to-amber-400 { --tw-gradient-to: #facc15 var(--tw-gradient-to-position) !important; }
+[data-theme="citrus-light"] .via-amber-400 { --tw-gradient-stops: var(--tw-gradient-from), #facc15 var(--tw-gradient-via-position), var(--tw-gradient-to) !important; }
+[data-theme="citrus-light"] .coffee-glow { box-shadow: 0 0 25px -5px rgba(217, 119, 6, 0.15) !important; }
+[data-theme="citrus-light"] .coffee-card-gradient { background: linear-gradient(145deg, #ffffff 0%, #fef9e8 100%) !important; }
+
+
+/* ------------------------------------------------------------
+   A4. COPENHAGEN GLACIER BLUE (🧊 哥本哈根冰川藍 - LIGHT)
+   ------------------------------------------------------------ */
+[data-theme="nordic-ice-light"] {
+  --theme-accent: #0284c7;
+}
+[data-theme="nordic-ice-light"] body,
+[data-theme="nordic-ice-light"] .bg-stone-950 {
+  background-color: #f4f8fb !important;
+}
+[data-theme="nordic-ice-light"] .bg-stone-800 {
+  background-color: #e8f1f8 !important;
+}
+[data-theme="nordic-ice-light"] .border-stone-800,
+[data-theme="nordic-ice-light"] .border-stone-800\/60,
+[data-theme="nordic-ice-light"] .border-stone-800\/80 {
+  border-color: #cfe1f2 !important;
+}
+[data-theme="nordic-ice-light"] .border-stone-700 {
+  border-color: #b5d2eb !important;
+}
+[data-theme="nordic-ice-light"] .text-amber-200 { color: #0369a1 !important; }
+[data-theme="nordic-ice-light"] .text-amber-300 { color: #0284c7 !important; }
+[data-theme="nordic-ice-light"] .text-amber-400 { color: #0ea5e9 !important; }
+[data-theme="nordic-ice-light"] .text-amber-500 { color: #0284c7 !important; }
+[data-theme="nordic-ice-light"] .text-amber-600 { color: #0369a1 !important; }
+[data-theme="nordic-ice-light"] .bg-amber-500 { background-color: #0284c7 !important; }
+[data-theme="nordic-ice-light"] .bg-amber-600 { background-color: #0369a1 !important; }
+[data-theme="nordic-ice-light"] .border-amber-500 { border-color: #0284c7 !important; }
+[data-theme="nordic-ice-light"] .bg-amber-500\/5 { background-color: rgba(2, 132, 199, 0.05) !important; }
+[data-theme="nordic-ice-light"] .bg-amber-500\/10 { background-color: rgba(2, 132, 199, 0.09) !important; }
+[data-theme="nordic-ice-light"] .bg-amber-500\/20 { background-color: rgba(2, 132, 199, 0.16) !important; }
+[data-theme="nordic-ice-light"] .bg-amber-500\/30 { background-color: rgba(2, 132, 199, 0.24) !important; }
+[data-theme="nordic-ice-light"] .border-amber-500\/20 { border-color: rgba(2, 132, 199, 0.25) !important; }
+[data-theme="nordic-ice-light"] .border-amber-500\/30 { border-color: rgba(2, 132, 199, 0.35) !important; }
+[data-theme="nordic-ice-light"] .border-amber-500\/40 { border-color: rgba(2, 132, 199, 0.45) !important; }
+[data-theme="nordic-ice-light"] .border-amber-500\/50 { border-color: rgba(2, 132, 199, 0.55) !important; }
+[data-theme="nordic-ice-light"] .from-amber-600 { --tw-gradient-from: #0369a1 var(--tw-gradient-from-position) !important; }
+[data-theme="nordic-ice-light"] .from-amber-700 { --tw-gradient-from: #075985 var(--tw-gradient-from-position) !important; }
+[data-theme="nordic-ice-light"] .to-amber-500 { --tw-gradient-to: #0284c7 var(--tw-gradient-to-position) !important; }
+[data-theme="nordic-ice-light"] .to-amber-400 { --tw-gradient-to: #38bdf8 var(--tw-gradient-to-position) !important; }
+[data-theme="nordic-ice-light"] .via-amber-400 { --tw-gradient-stops: var(--tw-gradient-from), #38bdf8 var(--tw-gradient-via-position), var(--tw-gradient-to) !important; }
+[data-theme="nordic-ice-light"] .coffee-glow { box-shadow: 0 0 25px -5px rgba(2, 132, 199, 0.15) !important; }
+[data-theme="nordic-ice-light"] .coffee-card-gradient { background: linear-gradient(145deg, #ffffff 0%, #f0f6fc 100%) !important; }
+
+
+/* ------------------------------------------------------------
+   A5. PROVENCE LAVENDER (🪻 普羅旺斯薰衣草晨曦 - LIGHT)
+   ------------------------------------------------------------ */
+[data-theme="lavender-light"] {
+  --theme-accent: #9333ea;
+}
+[data-theme="lavender-light"] body,
+[data-theme="lavender-light"] .bg-stone-950 {
+  background-color: #faf7fd !important;
+}
+[data-theme="lavender-light"] .bg-stone-800 {
+  background-color: #f2eafd !important;
+}
+[data-theme="lavender-light"] .border-stone-800,
+[data-theme="lavender-light"] .border-stone-800\/60,
+[data-theme="lavender-light"] .border-stone-800\/80 {
+  border-color: #e4d3f9 !important;
+}
+[data-theme="lavender-light"] .border-stone-700 {
+  border-color: #d3b9f4 !important;
+}
+[data-theme="lavender-light"] .text-amber-200 { color: #7e22ce !important; }
+[data-theme="lavender-light"] .text-amber-300 { color: #9333ea !important; }
+[data-theme="lavender-light"] .text-amber-400 { color: #a855f7 !important; }
+[data-theme="lavender-light"] .text-amber-500 { color: #9333ea !important; }
+[data-theme="lavender-light"] .text-amber-600 { color: #7e22ce !important; }
+[data-theme="lavender-light"] .bg-amber-500 { background-color: #9333ea !important; }
+[data-theme="lavender-light"] .bg-amber-600 { background-color: #7e22ce !important; }
+[data-theme="lavender-light"] .border-amber-500 { border-color: #9333ea !important; }
+[data-theme="lavender-light"] .bg-amber-500\/5 { background-color: rgba(147, 51, 234, 0.05) !important; }
+[data-theme="lavender-light"] .bg-amber-500\/10 { background-color: rgba(147, 51, 234, 0.09) !important; }
+[data-theme="lavender-light"] .bg-amber-500\/20 { background-color: rgba(147, 51, 234, 0.16) !important; }
+[data-theme="lavender-light"] .bg-amber-500\/30 { background-color: rgba(147, 51, 234, 0.24) !important; }
+[data-theme="lavender-light"] .border-amber-500\/20 { border-color: rgba(147, 51, 234, 0.25) !important; }
+[data-theme="lavender-light"] .border-amber-500\/30 { border-color: rgba(147, 51, 234, 0.35) !important; }
+[data-theme="lavender-light"] .border-amber-500\/40 { border-color: rgba(147, 51, 234, 0.45) !important; }
+[data-theme="lavender-light"] .border-amber-500\/50 { border-color: rgba(147, 51, 234, 0.55) !important; }
+[data-theme="lavender-light"] .from-amber-600 { --tw-gradient-from: #7e22ce var(--tw-gradient-from-position) !important; }
+[data-theme="lavender-light"] .from-amber-700 { --tw-gradient-from: #6b21a8 var(--tw-gradient-from-position) !important; }
+[data-theme="lavender-light"] .to-amber-500 { --tw-gradient-to: #9333ea var(--tw-gradient-to-position) !important; }
+[data-theme="lavender-light"] .to-amber-400 { --tw-gradient-to: #c084fc var(--tw-gradient-to-position) !important; }
+[data-theme="lavender-light"] .via-amber-400 { --tw-gradient-stops: var(--tw-gradient-from), #c084fc var(--tw-gradient-via-position), var(--tw-gradient-to) !important; }
+[data-theme="lavender-light"] .coffee-glow { box-shadow: 0 0 25px -5px rgba(147, 51, 234, 0.15) !important; }
+[data-theme="lavender-light"] .coffee-card-gradient { background: linear-gradient(145deg, #ffffff 0%, #f9f3fd 100%) !important; }
+
+
+/* ------------------------------------------------------------
+   A6. OAT MILK DAYLIGHT (🥛 燕麥奶暖日晨光 - LIGHT)
+   ------------------------------------------------------------ */
+[data-theme="oat-daylight"] {
+  --theme-accent: #c2410c;
+}
+[data-theme="oat-daylight"] body,
+[data-theme="oat-daylight"] .bg-stone-950 {
+  background-color: #faf7f2 !important;
+}
+[data-theme="oat-daylight"] .bg-stone-800 {
+  background-color: #f4eee5 !important;
+}
+[data-theme="oat-daylight"] .border-stone-800,
+[data-theme="oat-daylight"] .border-stone-800\/60,
+[data-theme="oat-daylight"] .border-stone-800\/80 {
+  border-color: #e5dbcd !important;
+}
+[data-theme="oat-daylight"] .border-stone-700 {
+  border-color: #d8cbba !important;
+}
+[data-theme="oat-daylight"] .text-amber-200 { color: #c2410c !important; }
+[data-theme="oat-daylight"] .text-amber-300 { color: #ea580c !important; }
+[data-theme="oat-daylight"] .text-amber-400 { color: #f97316 !important; }
+[data-theme="oat-daylight"] .text-amber-500 { color: #c2410c !important; }
+[data-theme="oat-daylight"] .text-amber-600 { color: #9a3412 !important; }
+[data-theme="oat-daylight"] .bg-amber-500 { background-color: #c2410c !important; }
+[data-theme="oat-daylight"] .bg-amber-600 { background-color: #9a3412 !important; }
+[data-theme="oat-daylight"] .border-amber-500 { border-color: #c2410c !important; }
+[data-theme="oat-daylight"] .bg-amber-500\/5 { background-color: rgba(194, 65, 12, 0.05) !important; }
+[data-theme="oat-daylight"] .bg-amber-500\/10 { background-color: rgba(194, 65, 12, 0.09) !important; }
+[data-theme="oat-daylight"] .bg-amber-500\/20 { background-color: rgba(194, 65, 12, 0.16) !important; }
+[data-theme="oat-daylight"] .bg-amber-500\/30 { background-color: rgba(194, 65, 12, 0.24) !important; }
+[data-theme="oat-daylight"] .border-amber-500\/20 { border-color: rgba(194, 65, 12, 0.25) !important; }
+[data-theme="oat-daylight"] .border-amber-500\/30 { border-color: rgba(194, 65, 12, 0.35) !important; }
+[data-theme="oat-daylight"] .border-amber-500\/40 { border-color: rgba(194, 65, 12, 0.45) !important; }
+[data-theme="oat-daylight"] .border-amber-500\/50 { border-color: rgba(194, 65, 12, 0.55) !important; }
+[data-theme="oat-daylight"] .from-amber-600 { --tw-gradient-from: #9a3412 var(--tw-gradient-from-position) !important; }
+[data-theme="oat-daylight"] .from-amber-700 { --tw-gradient-from: #7c2d12 var(--tw-gradient-from-position) !important; }
+[data-theme="oat-daylight"] .to-amber-500 { --tw-gradient-to: #c2410c var(--tw-gradient-to-position) !important; }
+[data-theme="oat-daylight"] .to-amber-400 { --tw-gradient-to: #ea580c var(--tw-gradient-to-position) !important; }
+[data-theme="oat-daylight"] .via-amber-400 { --tw-gradient-stops: var(--tw-gradient-from), #ea580c var(--tw-gradient-via-position), var(--tw-gradient-to) !important; }
+[data-theme="oat-daylight"] .coffee-glow { box-shadow: 0 0 25px -5px rgba(194, 65, 12, 0.15) !important; }
+[data-theme="oat-daylight"] .coffee-card-gradient { background: linear-gradient(145deg, #ffffff 0%, #f7f2eb 100%) !important; }
+
+
+/* ============================================================
+   🌙 SECTION B: DARK MODE BASE THEMES
    ============================================================ */
 
 /* ------------------------------------------------------------
-   1. PEACH BLOSSOM & WILD BERRY (🌸 蜜桃橙花與野草莓)
+   B1. PEACH BLOSSOM & WILD BERRY (🌸 蜜桃橙花與野草莓 - DARK)
    ------------------------------------------------------------ */
 [data-theme="peach-blossom"] {
   --theme-accent: #ec4899;
@@ -51,7 +431,7 @@
 
 
 /* ------------------------------------------------------------
-   2. TROPICAL MANGO & PASSIONFRUIT (🥭 熱帶芒果與百香果)
+   B2. TROPICAL MANGO & PASSIONFRUIT (🥭 熱帶芒果與百香果 - DARK)
    ------------------------------------------------------------ */
 [data-theme="tropical-mango"] {
   --theme-accent: #f97316;
@@ -99,7 +479,7 @@
 
 
 /* ------------------------------------------------------------
-   3. YIRGACHEFFE JASMINE & CITRUS (🍋 耶加茉莉與佛手柑)
+   B3. YIRGACHEFFE JASMINE & CITRUS (🍋 耶加茉莉與佛手柑 - DARK)
    ------------------------------------------------------------ */
 [data-theme="jasmine-citrus"] {
   --theme-accent: #eab308;
@@ -147,7 +527,7 @@
 
 
 /* ------------------------------------------------------------
-   4. LAVENDER & VIOLET BLOOM (🪻 薰衣草與紫羅蘭花香)
+   B4. LAVENDER & VIOLET BLOOM (🪻 薰衣草與紫羅蘭花香 - DARK)
    ------------------------------------------------------------ */
 [data-theme="violet-lavender"] {
   --theme-accent: #a855f7;
@@ -195,55 +575,15 @@
 
 
 /* ------------------------------------------------------------
-   5. NORDIC SAGE & LIGHT ROAST (🌿 北歐淺焙鼠尾草綠)
+   B5. CLASSIC AMBER ROAST (☕ 經典琥珀烘焙 - DARK)
    ------------------------------------------------------------ */
-[data-theme="nordic-sage"] {
-  --theme-accent: #10b981;
+[data-theme="warm-amber"] {
+  --theme-accent: #f59e0b;
 }
-[data-theme="nordic-sage"] body,
-[data-theme="nordic-sage"] .bg-stone-950 {
-  background-color: #06100d !important;
-}
-[data-theme="nordic-sage"] .bg-stone-900 {
-  background-color: #0d1f19 !important;
-}
-[data-theme="nordic-sage"] .bg-stone-800 {
-  background-color: #142a22 !important;
-}
-[data-theme="nordic-sage"] .border-stone-800 {
-  border-color: #1a382e !important;
-}
-[data-theme="nordic-sage"] .border-stone-700 {
-  border-color: #244d40 !important;
-}
-[data-theme="nordic-sage"] .text-amber-200 { color: #a7f3d0 !important; }
-[data-theme="nordic-sage"] .text-amber-300 { color: #6ee7b7 !important; }
-[data-theme="nordic-sage"] .text-amber-400 { color: #34d399 !important; }
-[data-theme="nordic-sage"] .text-amber-500 { color: #10b981 !important; }
-[data-theme="nordic-sage"] .text-amber-600 { color: #059669 !important; }
-[data-theme="nordic-sage"] .bg-amber-500 { background-color: #10b981 !important; }
-[data-theme="nordic-sage"] .bg-amber-600 { background-color: #059669 !important; }
-[data-theme="nordic-sage"] .border-amber-500 { border-color: #10b981 !important; }
-[data-theme="nordic-sage"] .bg-amber-500\/5 { background-color: rgba(16, 185, 129, 0.05) !important; }
-[data-theme="nordic-sage"] .bg-amber-500\/10 { background-color: rgba(16, 185, 129, 0.1) !important; }
-[data-theme="nordic-sage"] .bg-amber-500\/20 { background-color: rgba(16, 185, 129, 0.2) !important; }
-[data-theme="nordic-sage"] .bg-amber-500\/30 { background-color: rgba(16, 185, 129, 0.3) !important; }
-[data-theme="nordic-sage"] .border-amber-500\/20 { border-color: rgba(16, 185, 129, 0.2) !important; }
-[data-theme="nordic-sage"] .border-amber-500\/30 { border-color: rgba(16, 185, 129, 0.3) !important; }
-[data-theme="nordic-sage"] .border-amber-500\/40 { border-color: rgba(16, 185, 129, 0.4) !important; }
-[data-theme="nordic-sage"] .border-amber-500\/50 { border-color: rgba(16, 185, 129, 0.5) !important; }
-[data-theme="nordic-sage"] .from-amber-600 { --tw-gradient-from: #059669 var(--tw-gradient-from-position) !important; }
-[data-theme="nordic-sage"] .from-amber-700 { --tw-gradient-from: #047857 var(--tw-gradient-from-position) !important; }
-[data-theme="nordic-sage"] .to-amber-500 { --tw-gradient-to: #10b981 var(--tw-gradient-to-position) !important; }
-[data-theme="nordic-sage"] .to-amber-400 { --tw-gradient-to: #34d399 var(--tw-gradient-to-position) !important; }
-[data-theme="nordic-sage"] .via-amber-400 { --tw-gradient-stops: var(--tw-gradient-from), #34d399 var(--tw-gradient-via-position), var(--tw-gradient-to) !important; }
-[data-theme="nordic-sage"] .shadow-amber-900\/30 { box-shadow: 0 10px 15px -3px rgba(6, 78, 59, 0.3) !important; }
-[data-theme="nordic-sage"] .coffee-glow { box-shadow: 0 0 25px -5px rgba(16, 185, 129, 0.25) !important; }
-[data-theme="nordic-sage"] .coffee-card-gradient { background: linear-gradient(145deg, rgba(14, 30, 24, 0.85) 0%, rgba(8, 18, 14, 0.95) 100%) !important; }
 
 
 /* ------------------------------------------------------------
-   6. GEISHA NATURAL RUBY (🍷 瑰夏紅酒與自然莓果)
+   B6. GEISHA NATURAL RUBY (🍷 瑰夏紅酒與自然莓果 - DARK)
    ------------------------------------------------------------ */
 [data-theme="geisha-ruby"] {
   --theme-accent: #f43f5e;
@@ -291,7 +631,55 @@
 
 
 /* ------------------------------------------------------------
-   7. TOKYO MINIMALIST CYAN (🪨 東京極簡冰川藍)
+   B7. NORDIC SAGE & LIGHT ROAST (🌿 北歐淺焙鼠尾草綠 - DARK)
+   ------------------------------------------------------------ */
+[data-theme="nordic-sage"] {
+  --theme-accent: #10b981;
+}
+[data-theme="nordic-sage"] body,
+[data-theme="nordic-sage"] .bg-stone-950 {
+  background-color: #06100d !important;
+}
+[data-theme="nordic-sage"] .bg-stone-900 {
+  background-color: #0d1f19 !important;
+}
+[data-theme="nordic-sage"] .bg-stone-800 {
+  background-color: #142a22 !important;
+}
+[data-theme="nordic-sage"] .border-stone-800 {
+  border-color: #1a382e !important;
+}
+[data-theme="nordic-sage"] .border-stone-700 {
+  border-color: #244d40 !important;
+}
+[data-theme="nordic-sage"] .text-amber-200 { color: #a7f3d0 !important; }
+[data-theme="nordic-sage"] .text-amber-300 { color: #6ee7b7 !important; }
+[data-theme="nordic-sage"] .text-amber-400 { color: #34d399 !important; }
+[data-theme="nordic-sage"] .text-amber-500 { color: #10b981 !important; }
+[data-theme="nordic-sage"] .text-amber-600 { color: #059669 !important; }
+[data-theme="nordic-sage"] .bg-amber-500 { background-color: #10b981 !important; }
+[data-theme="nordic-sage"] .bg-amber-600 { background-color: #059669 !important; }
+[data-theme="nordic-sage"] .border-amber-500 { border-color: #10b981 !important; }
+[data-theme="nordic-sage"] .bg-amber-500\/5 { background-color: rgba(16, 185, 129, 0.05) !important; }
+[data-theme="nordic-sage"] .bg-amber-500\/10 { background-color: rgba(16, 185, 129, 0.1) !important; }
+[data-theme="nordic-sage"] .bg-amber-500\/20 { background-color: rgba(16, 185, 129, 0.2) !important; }
+[data-theme="nordic-sage"] .bg-amber-500\/30 { background-color: rgba(16, 185, 129, 0.3) !important; }
+[data-theme="nordic-sage"] .border-amber-500\/20 { border-color: rgba(16, 185, 129, 0.2) !important; }
+[data-theme="nordic-sage"] .border-amber-500\/30 { border-color: rgba(16, 185, 129, 0.3) !important; }
+[data-theme="nordic-sage"] .border-amber-500\/40 { border-color: rgba(16, 185, 129, 0.4) !important; }
+[data-theme="nordic-sage"] .border-amber-500\/50 { border-color: rgba(16, 185, 129, 0.5) !important; }
+[data-theme="nordic-sage"] .from-amber-600 { --tw-gradient-from: #059669 var(--tw-gradient-from-position) !important; }
+[data-theme="nordic-sage"] .from-amber-700 { --tw-gradient-from: #047857 var(--tw-gradient-from-position) !important; }
+[data-theme="nordic-sage"] .to-amber-500 { --tw-gradient-to: #10b981 var(--tw-gradient-to-position) !important; }
+[data-theme="nordic-sage"] .to-amber-400 { --tw-gradient-to: #34d399 var(--tw-gradient-to-position) !important; }
+[data-theme="nordic-sage"] .via-amber-400 { --tw-gradient-stops: var(--tw-gradient-from), #34d399 var(--tw-gradient-via-position), var(--tw-gradient-to) !important; }
+[data-theme="nordic-sage"] .shadow-amber-900\/30 { box-shadow: 0 10px 15px -3px rgba(6, 78, 59, 0.3) !important; }
+[data-theme="nordic-sage"] .coffee-glow { box-shadow: 0 0 25px -5px rgba(16, 185, 129, 0.25) !important; }
+[data-theme="nordic-sage"] .coffee-card-gradient { background: linear-gradient(145deg, rgba(14, 30, 24, 0.85) 0%, rgba(8, 18, 14, 0.95) 100%) !important; }
+
+
+/* ------------------------------------------------------------
+   B8. TOKYO MINIMALIST CYAN (🪨 東京極簡冰川藍 - DARK)
    ------------------------------------------------------------ */
 [data-theme="tokyo-cyan"] {
   --theme-accent: #0ea5e9;
@@ -336,70 +724,3 @@
 [data-theme="tokyo-cyan"] .shadow-amber-900\/30 { box-shadow: 0 10px 15px -3px rgba(3, 105, 161, 0.3) !important; }
 [data-theme="tokyo-cyan"] .coffee-glow { box-shadow: 0 0 25px -5px rgba(14, 165, 233, 0.25) !important; }
 [data-theme="tokyo-cyan"] .coffee-card-gradient { background: linear-gradient(145deg, rgba(16, 20, 28, 0.85) 0%, rgba(9, 11, 16, 0.95) 100%) !important; }
-
-
-/* ------------------------------------------------------------
-   8. OAT MILK DAYLIGHT (🥛 燕麥奶暖日晨光 - WARM LIGHT MODE)
-   ------------------------------------------------------------ */
-[data-theme="oat-daylight"] {
-  --theme-accent: #c2410c;
-}
-[data-theme="oat-daylight"] body,
-[data-theme="oat-daylight"] .bg-stone-950 {
-  background-color: #faf7f2 !important;
-  color: #1c1917 !important;
-}
-[data-theme="oat-daylight"] .bg-stone-900 {
-  background-color: #ffffff !important;
-  color: #1c1917 !important;
-}
-[data-theme="oat-daylight"] .bg-stone-800 {
-  background-color: #f4eee5 !important;
-  color: #292524 !important;
-}
-[data-theme="oat-daylight"] .bg-stone-950\/90,
-[data-theme="oat-daylight"] .bg-stone-950\/80,
-[data-theme="oat-daylight"] .bg-stone-950\/70,
-[data-theme="oat-daylight"] .bg-stone-950\/60,
-[data-theme="oat-daylight"] .bg-stone-950\/50,
-[data-theme="oat-daylight"] .bg-stone-950\/40 {
-  background-color: rgba(250, 247, 242, 0.92) !important;
-}
-[data-theme="oat-daylight"] .border-stone-800,
-[data-theme="oat-daylight"] .border-stone-800\/60,
-[data-theme="oat-daylight"] .border-stone-800\/80 {
-  border-color: #e5dbcd !important;
-}
-[data-theme="oat-daylight"] .border-stone-700 {
-  border-color: #d8cbba !important;
-}
-[data-theme="oat-daylight"] .text-stone-100 { color: #1c1917 !important; }
-[data-theme="oat-daylight"] .text-stone-200 { color: #292524 !important; }
-[data-theme="oat-daylight"] .text-stone-300 { color: #44403c !important; }
-[data-theme="oat-daylight"] .text-stone-400 { color: #57534e !important; }
-[data-theme="oat-daylight"] .text-stone-500 { color: #78716c !important; }
-
-[data-theme="oat-daylight"] .text-amber-200 { color: #c2410c !important; }
-[data-theme="oat-daylight"] .text-amber-300 { color: #ea580c !important; }
-[data-theme="oat-daylight"] .text-amber-400 { color: #f97316 !important; }
-[data-theme="oat-daylight"] .text-amber-500 { color: #c2410c !important; }
-[data-theme="oat-daylight"] .text-amber-600 { color: #9a3412 !important; }
-[data-theme="oat-daylight"] .bg-amber-500 { background-color: #c2410c !important; }
-[data-theme="oat-daylight"] .bg-amber-600 { background-color: #9a3412 !important; }
-[data-theme="oat-daylight"] .border-amber-500 { border-color: #c2410c !important; }
-[data-theme="oat-daylight"] .bg-amber-500\/5 { background-color: rgba(194, 65, 12, 0.05) !important; }
-[data-theme="oat-daylight"] .bg-amber-500\/10 { background-color: rgba(194, 65, 12, 0.09) !important; }
-[data-theme="oat-daylight"] .bg-amber-500\/20 { background-color: rgba(194, 65, 12, 0.16) !important; }
-[data-theme="oat-daylight"] .bg-amber-500\/30 { background-color: rgba(194, 65, 12, 0.24) !important; }
-[data-theme="oat-daylight"] .border-amber-500\/20 { border-color: rgba(194, 65, 12, 0.25) !important; }
-[data-theme="oat-daylight"] .border-amber-500\/30 { border-color: rgba(194, 65, 12, 0.35) !important; }
-[data-theme="oat-daylight"] .border-amber-500\/40 { border-color: rgba(194, 65, 12, 0.45) !important; }
-[data-theme="oat-daylight"] .border-amber-500\/50 { border-color: rgba(194, 65, 12, 0.55) !important; }
-[data-theme="oat-daylight"] .from-amber-600 { --tw-gradient-from: #9a3412 var(--tw-gradient-from-position) !important; }
-[data-theme="oat-daylight"] .from-amber-700 { --tw-gradient-from: #7c2d12 var(--tw-gradient-from-position) !important; }
-[data-theme="oat-daylight"] .to-amber-500 { --tw-gradient-to: #c2410c var(--tw-gradient-to-position) !important; }
-[data-theme="oat-daylight"] .to-amber-400 { --tw-gradient-to: #ea580c var(--tw-gradient-to-position) !important; }
-[data-theme="oat-daylight"] .via-amber-400 { --tw-gradient-stops: var(--tw-gradient-from), #ea580c var(--tw-gradient-via-position), var(--tw-gradient-to) !important; }
-[data-theme="oat-daylight"] .shadow-amber-900\/30 { box-shadow: 0 10px 15px -3px rgba(154, 52, 18, 0.2) !important; }
-[data-theme="oat-daylight"] .coffee-glow { box-shadow: 0 0 25px -5px rgba(194, 65, 12, 0.15) !important; }
-[data-theme="oat-daylight"] .coffee-card-gradient { background: linear-gradient(145deg, #ffffff 0%, #f7f2eb 100%) !important; }
