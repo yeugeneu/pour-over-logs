@@ -1,9 +1,19 @@
 import React, { createContext, useContext, useEffect, useState } from 'react';
 
-export type AppTheme = 'warm-amber' | 'nordic-sage' | 'geisha-ruby' | 'tokyo-cyan' | 'oat-daylight';
+export type AppTheme =
+  | 'warm-amber'
+  | 'peach-blossom'
+  | 'tropical-mango'
+  | 'jasmine-citrus'
+  | 'violet-lavender'
+  | 'geisha-ruby'
+  | 'nordic-sage'
+  | 'tokyo-cyan'
+  | 'oat-daylight';
 
 export interface ThemeInfo {
   id: AppTheme;
+  category: 'floral-fruity' | 'classic' | 'modern';
   nameZh: string;
   nameEn: string;
   descriptionZh: string;
@@ -16,8 +26,64 @@ export interface ThemeInfo {
 }
 
 export const THEMES: ThemeInfo[] = [
+  // --- FLORAL & FRUITY VIBRANCE ---
+  {
+    id: 'peach-blossom',
+    category: 'floral-fruity',
+    nameZh: '蜜桃橙花與野草莓',
+    nameEn: 'Peach Blossom & Berry',
+    descriptionZh: '甜美白桃、粉紅草莓與淡雅橙花香氣',
+    descriptionEn: 'Sweet white peach, pink wild berry & orange blossom',
+    primaryColor: '#ec4899',
+    secondaryColor: '#f472b6',
+    bgColor: '#160a13',
+    isDark: true,
+    emoji: '🌸',
+  },
+  {
+    id: 'tropical-mango',
+    category: 'floral-fruity',
+    nameZh: '熱帶芒果與百香果',
+    nameEn: 'Tropical Mango & Passion',
+    descriptionZh: '明亮多汁的百香果與熱帶芒果厭氧發酵風味',
+    descriptionEn: 'Juicy passionfruit & vibrant tropical anaerobic notes',
+    primaryColor: '#f97316',
+    secondaryColor: '#fb923c',
+    bgColor: '#170d08',
+    isDark: true,
+    emoji: '🥭',
+  },
+  {
+    id: 'jasmine-citrus',
+    category: 'floral-fruity',
+    nameZh: '耶加茉莉與佛手柑',
+    nameEn: 'Yirgacheffe Jasmine & Citrus',
+    descriptionZh: '明亮檸檬水洗酸質、佛手柑與盛開茉莉白花',
+    descriptionEn: 'Bright washed lemon citrus, bergamot & jasmine florals',
+    primaryColor: '#eab308',
+    secondaryColor: '#facc15',
+    bgColor: '#141107',
+    isDark: true,
+    emoji: '🍋',
+  },
+  {
+    id: 'violet-lavender',
+    category: 'floral-fruity',
+    nameZh: '薰衣草與紫羅蘭花香',
+    nameEn: 'Lavender & Violet Bloom',
+    descriptionZh: '優雅紫羅蘭、薰衣草與藍莓花果甜香',
+    descriptionEn: 'Elegant violet petals, lavender aroma & blueberry',
+    primaryColor: '#a855f7',
+    secondaryColor: '#c084fc',
+    bgColor: '#120b1c',
+    isDark: true,
+    emoji: '🪻',
+  },
+
+  // --- CLASSIC ROASTERY & SPECIALTY PROCESSING ---
   {
     id: 'warm-amber',
+    category: 'classic',
     nameZh: '經典琥珀烘焙',
     nameEn: 'Warm Amber Roast',
     descriptionZh: '溫暖蜂蜜焦糖與日式喫茶店質調',
@@ -29,19 +95,8 @@ export const THEMES: ThemeInfo[] = [
     emoji: '☕',
   },
   {
-    id: 'nordic-sage',
-    nameZh: '北歐淺焙鼠尾草綠',
-    nameEn: 'Nordic Sage & Light Roast',
-    descriptionZh: '清新草本薄荷，奧斯陸極簡咖啡美學',
-    descriptionEn: 'Crisp herbal mint & Oslo minimalist aesthetic',
-    primaryColor: '#10b981',
-    secondaryColor: '#059669',
-    bgColor: '#06100d',
-    isDark: true,
-    emoji: '🌿',
-  },
-  {
     id: 'geisha-ruby',
+    category: 'classic',
     nameZh: '瑰夏紅酒與自然莓果',
     nameEn: 'Geisha Natural Ruby',
     descriptionZh: '花香與厭氧發酵莓果，頂級感官體驗',
@@ -53,7 +108,23 @@ export const THEMES: ThemeInfo[] = [
     emoji: '🍷',
   },
   {
+    id: 'nordic-sage',
+    category: 'classic',
+    nameZh: '北歐淺焙鼠尾草綠',
+    nameEn: 'Nordic Sage & Light Roast',
+    descriptionZh: '清新草本薄荷，奧斯陸極簡咖啡美學',
+    descriptionEn: 'Crisp herbal mint & Oslo minimalist aesthetic',
+    primaryColor: '#10b981',
+    secondaryColor: '#059669',
+    bgColor: '#06100d',
+    isDark: true,
+    emoji: '🌿',
+  },
+
+  // --- MODERN MINIMALIST & DAYLIGHT ---
+  {
     id: 'tokyo-cyan',
+    category: 'modern',
     nameZh: '東京極簡冰川藍',
     nameEn: 'Tokyo Minimalist Cyan',
     descriptionZh: '冷冽科技感與精準萃取儀表板',
@@ -66,6 +137,7 @@ export const THEMES: ThemeInfo[] = [
   },
   {
     id: 'oat-daylight',
+    category: 'modern',
     nameZh: '燕麥奶暖日晨光',
     nameEn: 'Oat Milk Daylight',
     descriptionZh: '溫暖明亮的晨光手沖，清爽乾淨日行模式',
@@ -87,7 +159,7 @@ interface ThemeContextType {
   closeThemeModal: () => void;
 }
 
-const STORAGE_KEY = 'brewlog_app_theme_v1';
+const STORAGE_KEY = 'brewlog_app_theme_v2';
 
 const ThemeContext = createContext<ThemeContextType | null>(null);
 

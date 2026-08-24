@@ -1,27 +1,33 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { useTheme, THEMES, AppTheme } from '../../context/ThemeContext';
 import { useI18n } from '../../i18n';
-import { X, Palette, Check, Sparkles } from 'lucide-react';
+import { X, Palette, Check, Sparkles, Flower2, Coffee, SunMedium } from 'lucide-react';
 import confetti from 'canvas-confetti';
 
 export const ThemeSwitcherModal: React.FC = () => {
   const { theme, setTheme, isThemeModalOpen, closeThemeModal } = useTheme();
   const { language } = useI18n();
 
+  const [activeCategory, setActiveCategory] = useState<'all' | 'floral-fruity' | 'classic' | 'modern'>('all');
+
   if (!isThemeModalOpen) return null;
 
   const handleSelectTheme = (themeId: AppTheme) => {
     setTheme(themeId);
     confetti({
-      particleCount: 30,
-      spread: 50,
+      particleCount: 35,
+      spread: 55,
       origin: { y: 0.7 },
     });
   };
 
+  const filteredThemes = activeCategory === 'all'
+    ? THEMES
+    : THEMES.filter((t) => t.category === activeCategory);
+
   return (
     <div className="fixed inset-0 z-50 overflow-y-auto bg-black/80 backdrop-blur-sm flex items-center justify-center p-3 sm:p-4 animate-fade-in">
-      <div className="bg-stone-900 border border-stone-800 rounded-3xl w-full max-w-lg shadow-2xl overflow-hidden flex flex-col max-h-[92vh]">
+      <div className="bg-stone-900 border border-stone-800 rounded-3xl w-full max-w-xl shadow-2xl overflow-hidden flex flex-col max-h-[92vh]">
         {/* Header */}
         <div className="p-4 sm:p-5 border-b border-stone-800 bg-stone-950/80 flex items-center justify-between">
           <div className="flex items-center space-x-3">
@@ -30,11 +36,11 @@ export const ThemeSwitcherModal: React.FC = () => {
             </div>
             <div>
               <h3 className="font-bold text-base sm:text-lg text-stone-100 flex items-center gap-1.5">
-                <span>{language === 'zh-TW' ? '風格主題切換' : 'Theme Switcher'}</span>
+                <span>{language === 'zh-TW' ? '風味視覺風格主題' : 'Flavor & Aesthetic Themes'}</span>
                 <Sparkles className="w-4 h-4 text-amber-400" />
               </h3>
               <p className="text-xs text-stone-400">
-                {language === 'zh-TW' ? '自訂您的手沖日誌與儀表板視覺風格' : 'Customize your BrewLog color palette & vibe'}
+                {language === 'zh-TW' ? '依據您喜愛的手沖風味調性，自訂專屬儀表板視覺' : 'Select a theme that matches your favorite coffee flavor notes'}
               </p>
             </div>
           </div>
@@ -47,9 +53,60 @@ export const ThemeSwitcherModal: React.FC = () => {
           </button>
         </div>
 
+        {/* Category Pills */}
+        <div className="px-4 sm:px-6 pt-3 pb-1 border-b border-stone-800/80 bg-stone-950/40 flex items-center gap-1.5 overflow-x-auto no-scrollbar">
+          <button
+            type="button"
+            onClick={() => setActiveCategory('all')}
+            className={`px-3 py-1.5 rounded-xl text-xs font-semibold whitespace-nowrap transition ${
+              activeCategory === 'all'
+                ? 'bg-amber-500 text-stone-950 shadow-sm'
+                : 'text-stone-400 hover:text-stone-200 bg-stone-900/60 border border-stone-800'
+            }`}
+          >
+            🌟 {language === 'zh-TW' ? '全部 (9 種)' : 'All (9)'}
+          </button>
+          <button
+            type="button"
+            onClick={() => setActiveCategory('floral-fruity')}
+            className={`px-3 py-1.5 rounded-xl text-xs font-semibold whitespace-nowrap transition flex items-center gap-1.5 ${
+              activeCategory === 'floral-fruity'
+                ? 'bg-amber-500 text-stone-950 shadow-sm'
+                : 'text-stone-400 hover:text-stone-200 bg-stone-900/60 border border-stone-800'
+            }`}
+          >
+            <Flower2 className="w-3.5 h-3.5" />
+            <span>{language === 'zh-TW' ? '花香與果香 (Bright)' : 'Floral & Fruity'}</span>
+          </button>
+          <button
+            type="button"
+            onClick={() => setActiveCategory('classic')}
+            className={`px-3 py-1.5 rounded-xl text-xs font-semibold whitespace-nowrap transition flex items-center gap-1.5 ${
+              activeCategory === 'classic'
+                ? 'bg-amber-500 text-stone-950 shadow-sm'
+                : 'text-stone-400 hover:text-stone-200 bg-stone-900/60 border border-stone-800'
+            }`}
+          >
+            <Coffee className="w-3.5 h-3.5" />
+            <span>{language === 'zh-TW' ? '經典烘焙 (Classic)' : 'Classic Roast'}</span>
+          </button>
+          <button
+            type="button"
+            onClick={() => setActiveCategory('modern')}
+            className={`px-3 py-1.5 rounded-xl text-xs font-semibold whitespace-nowrap transition flex items-center gap-1.5 ${
+              activeCategory === 'modern'
+                ? 'bg-amber-500 text-stone-950 shadow-sm'
+                : 'text-stone-400 hover:text-stone-200 bg-stone-900/60 border border-stone-800'
+            }`}
+          >
+            <SunMedium className="w-3.5 h-3.5" />
+            <span>{language === 'zh-TW' ? '極簡/晨光 (Modern)' : 'Minimalist'}</span>
+          </button>
+        </div>
+
         {/* Theme List */}
-        <div className="p-4 sm:p-6 overflow-y-auto space-y-3">
-          {THEMES.map((t) => {
+        <div className="p-4 sm:p-6 overflow-y-auto space-y-2.5 flex-1">
+          {filteredThemes.map((t) => {
             const isSelected = theme === t.id;
             return (
               <button
@@ -127,7 +184,7 @@ export const ThemeSwitcherModal: React.FC = () => {
         {/* Footer */}
         <div className="p-4 border-t border-stone-800 bg-stone-950/80 flex items-center justify-between text-xs">
           <span className="text-stone-400 text-[11px]">
-            {language === 'zh-TW' ? '💡 主題設定將自動儲存於您的本機瀏覽器中' : '💡 Theme is saved locally on your device'}
+            {language === 'zh-TW' ? '💡 選擇後即時套用並自動儲存於本機' : '💡 Automatically saved locally'}
           </span>
           <button
             onClick={closeThemeModal}
