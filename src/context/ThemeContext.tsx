@@ -8,6 +8,7 @@ export type AppTheme =
   | 'nordic-ice-light'
   | 'lavender-light'
   | 'oat-daylight'
+  | 'burnt-peach-slate'
   // --- DARK MODE THEMES ---
   | 'peach-blossom'
   | 'tropical-mango'
@@ -121,6 +122,20 @@ export const THEMES: ThemeInfo[] = [
     bgColor: '#faf7f2',
     isDark: false,
     emoji: '🥛',
+  },
+  {
+    id: 'burnt-peach-slate',
+    mode: 'light',
+    category: 'floral-fruity',
+    nameZh: '🍑 焦香蜜桃與青石灰 (Burnt Peach & Slate)',
+    nameEn: 'Burnt Peach & Blue Slate (Light)',
+    descriptionZh: '焦糖蜜桃暖橘、珍珠米白陶瓷與復古青石藍',
+    descriptionEn: 'Burnt peach (#DD6E42), pearl beige (#E8DAB2) & blue slate (#4F6D7A)',
+    primaryColor: '#DD6E42',
+    secondaryColor: '#4F6D7A',
+    bgColor: '#f5f4f0',
+    isDark: false,
+    emoji: '🍑',
   },
 
   // ==========================================

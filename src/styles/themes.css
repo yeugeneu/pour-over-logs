@@ -213,6 +213,35 @@
   --theme-glow: 234 88 12;
 }
 
+/* 1.7 BURNT PEACH & BLUE SLATE (🍑 焦香蜜桃與青石灰 - LIGHT) */
+[data-theme="burnt-peach-slate"] {
+  --color-stone-950: 245 244 240;
+  --color-stone-900: 255 255 255;
+  --color-stone-800: 232 218 178;
+  --color-stone-700: 215 198 152;
+  --color-stone-600: 120 135 142;
+  --color-stone-500: 95 115 125;
+  --color-stone-400: 79 109 122;
+  --color-stone-300: 52 74 84;
+  --color-stone-200: 35 50 58;
+  --color-stone-100: 22 34 40;
+  --color-stone-50: 10 18 22;
+
+  --color-amber-950: 70 24 9;
+  --color-amber-900: 125 45 18;
+  --color-amber-800: 160 62 26;
+  --color-amber-700: 195 85 42;
+  --color-amber-600: 221 110 66;
+  --color-amber-500: 235 130 88;
+  --color-amber-400: 244 156 120;
+  --color-amber-300: 248 186 158;
+  --color-amber-200: 252 216 198;
+  --color-amber-100: 254 238 230;
+  --color-amber-50: 255 248 245;
+
+  --theme-glow: 221 110 66;
+}
+
 /* ==========================================================================
    🌙 2. DARK MODE THEMES (8 RICH SPECIALTY DARK PALETTES)
    ========================================================================== */

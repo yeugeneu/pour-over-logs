@@ -169,7 +169,7 @@ export const BackupModal: React.FC = () => {
             <div className="text-[11px] font-semibold text-amber-400 flex items-center gap-1">
               <span>☀️ {language === 'zh-TW' ? '明亮晨光主題 (Light Mode)' : 'Light Mode Themes'}</span>
             </div>
-            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-2">
+            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-7 gap-2">
               {THEMES.filter((t) => t.mode === 'light').map((t) => (
                 <button
                   key={t.id}
@@ -185,7 +185,7 @@ export const BackupModal: React.FC = () => {
                     <span>{t.emoji}</span>
                     <div className="w-3 h-3 rounded-full border border-white/20" style={{ backgroundColor: t.primaryColor }} />
                   </div>
-                  <span className="truncate text-[11px] font-medium">{language === 'zh-TW' ? t.nameZh.replace(' (Sakura Light)', '').replace(' (Matcha Light)', '').replace(' (Citrus Light)', '').replace(' (Glacier Light)', '').replace(' (Lavender Light)', '').replace(' (Oat Milk Light)', '') : t.nameEn}</span>
+                  <span className="truncate text-[11px] font-medium">{language === 'zh-TW' ? t.nameZh.replace(/\s*\([^)]*\)/, '') : t.nameEn.replace(/\s*\([^)]*\)/, '')}</span>
                 </button>
               ))}
             </div>
