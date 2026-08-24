@@ -507,6 +507,12 @@ export const AuthModal: React.FC = () => {
                   {/* METHOD A: EMAIL & PASSWORD (FASTEST & MOST RELIABLE ON MOBILE PWA) */}
                   {authMethod === 'password' && (
                     <form onSubmit={handlePasswordAuth} className="space-y-3">
+                      {isSignUpMode && (
+                        <div className="p-2.5 rounded-xl bg-amber-500/10 border border-amber-500/30 text-[11px] text-amber-300 leading-relaxed">
+                          💡 若您先前曾使用過 Magic Link 登入過，您的信箱已建立。請切換至「登入」並點擊「忘記 / 設定密碼」即可設定密碼！
+                        </div>
+                      )}
+
                       <div>
                         <label className="block text-xs font-semibold text-stone-300 mb-1">
                           {language === 'zh-TW' ? '電子信箱' : 'Email Address'}
@@ -529,15 +535,14 @@ export const AuthModal: React.FC = () => {
                           <label className="block text-xs font-semibold text-stone-300">
                             {language === 'zh-TW' ? '密碼' : 'Password'}
                           </label>
-                          {!isSignUpMode && (
-                            <button
-                              type="button"
-                              onClick={handleForgotPassword}
-                              className="text-[11px] text-amber-400 hover:text-amber-300 transition"
-                            >
-                              {language === 'zh-TW' ? '忘記 / 設定密碼？' : 'Forgot / Set password?'}
-                            </button>
-                          )}
+                          <button
+                            type="button"
+                            onClick={handleForgotPassword}
+                            className="text-[11px] text-amber-400 hover:text-amber-300 font-semibold transition flex items-center gap-1 px-1.5 py-0.5 rounded bg-amber-500/10 border border-amber-500/20"
+                          >
+                            <KeyRound className="w-3 h-3 text-amber-400" />
+                            <span>{language === 'zh-TW' ? '忘記 / 設定密碼？' : 'Forgot / Set password?'}</span>
+                          </button>
                         </div>
                         <div className="relative">
                           <Lock className="w-4 h-4 text-stone-500 absolute left-3 top-1/2 -translate-y-1/2" />
@@ -571,15 +576,23 @@ export const AuthModal: React.FC = () => {
                         )}
                       </button>
 
-                      <div className="text-center pt-1">
+                      <div className="flex items-center justify-between pt-1 text-[11px]">
                         <button
                           type="button"
                           onClick={() => setIsSignUpMode(!isSignUpMode)}
-                          className="text-[11px] text-amber-400 hover:text-amber-300 transition underline"
+                          className="text-amber-400 hover:text-amber-300 transition underline font-medium"
                         >
                           {isSignUpMode
                             ? (language === 'zh-TW' ? '已有帳號？切換至登入' : 'Already have an account? Sign In')
                             : (language === 'zh-TW' ? '第一次使用？點此免費註冊新帳號' : 'First time? Sign up free')}
+                        </button>
+
+                        <button
+                          type="button"
+                          onClick={handleForgotPassword}
+                          className="text-stone-400 hover:text-amber-300 transition underline"
+                        >
+                          {language === 'zh-TW' ? '寄送重設密碼信' : 'Reset password'}
                         </button>
                       </div>
                     </form>
