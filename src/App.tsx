@@ -11,6 +11,7 @@ import { BackupModal } from './components/backup/BackupModal';
 import { AuthModal } from './components/auth/AuthModal';
 import { ResetPasswordModal } from './components/auth/ResetPasswordModal';
 import { ThemeSwitcherModal } from './components/theme/ThemeSwitcherModal';
+import { TastingDialinModal } from './components/brew/TastingDialinModal';
 import { Coffee, Heart } from 'lucide-react';
 
 export const App: React.FC = () => {
@@ -33,6 +34,7 @@ export const App: React.FC = () => {
       <BrewSessionModal />
       <BeanModal />
       <BeanDetailModal />
+      <TastingDialinModal />
       <AuthModal />
       <ResetPasswordModal />
       <ThemeSwitcherModal />

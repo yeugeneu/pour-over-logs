@@ -257,10 +257,52 @@ export const BrewSessionModal: React.FC = () => {
     setStep(3);
   };
 
+  const handleSaveBrewLater = () => {
+    if (!currentBean) return;
+
+    const draftLog: Omit<BrewLog, 'id'> = {
+      beanId: currentBean.id,
+      brewDate: new Date().toISOString(),
+      daysOffRoast,
+      dripper,
+      filterPaper,
+      grinder,
+      grindSetting,
+      doseGrams: parsedDose,
+      waterGrams: parsedWater,
+      ratio,
+      waterTempCelsius: parsedTemp,
+      waterType,
+      bloomWaterGrams: stages[0]?.pourWaterGrams || 45,
+      bloomDurationSeconds: stages[0]?.durationSeconds || 40,
+      stages,
+      totalTimeSeconds,
+      drawdownTimeSeconds: totalTimeSeconds,
+      sensory: {
+        acidity: 7.5,
+        sweetness: 8.0,
+        body: 7.0,
+        clarity: 8.0,
+        balance: 8.0,
+        aftertaste: 7.5,
+        bitterness: 3.0,
+      },
+      flavorTags: [],
+      extractionAssessment: 'balanced_sweet',
+      dialinAdjustmentNotes: '',
+      overallScore: 8.0,
+      isGolden: false,
+      isTastingPending: true,
+    };
+
+    addLog(draftLog);
+    closeBrewModal();
+  };
+
   const handleSaveBrew = () => {
     if (!currentBean) return;
 
-    const draftLog: Omit<BrewLog, 'id' | 'createdAt' | 'updatedAt'> = {
+    const draftLog: Omit<BrewLog, 'id'> = {
       beanId: currentBean.id,
       brewDate: new Date().toISOString(),
       daysOffRoast,
@@ -282,10 +324,16 @@ export const BrewSessionModal: React.FC = () => {
       extractionYieldPercent: eyPercent,
       sensory,
       flavorTags,
-      extractionAssessment: sensory.sweetness >= 7 && sensory.bitterness <= 4 ? 'balanced_sweet' : sensory.bitterness >= 6 ? 'over_extracted' : 'under_extracted',
+      extractionAssessment:
+        sensory.sweetness >= 7 && sensory.bitterness <= 4
+          ? 'balanced_sweet'
+          : sensory.bitterness >= 6
+          ? 'over_extracted'
+          : 'under_extracted',
       dialinAdjustmentNotes: dialinNotes,
       overallScore,
       isGolden,
+      isTastingPending: false,
     };
 
     addLog(draftLog);
@@ -881,15 +929,26 @@ export const BrewSessionModal: React.FC = () => {
               <>
                 <button
                   type="button"
-                  onClick={() => setStep(3)}
-                  className="px-3.5 py-2 rounded-xl bg-stone-800 hover:bg-stone-700 text-stone-300 text-xs font-medium transition"
+                  onClick={handleSaveBrewLater}
+                  className="hidden sm:flex items-center space-x-1 px-3 py-2 rounded-xl bg-stone-900 hover:bg-stone-800 text-stone-300 text-xs font-semibold border border-stone-800 transition"
+                  title="僅保存手沖參數，待沖煮完成品飲後隨時再補填杯測"
                 >
-                  {language === 'zh-TW' ? '跳過計時 (手動紀錄)' : 'Skip Timer'}
+                  <Bookmark className="w-3.5 h-3.5 text-amber-400" />
+                  <span>{language === 'zh-TW' ? '僅記參數 (稍後杯測)' : 'Log & Cup Later'}</span>
                 </button>
+
+                <button
+                  type="button"
+                  onClick={() => setStep(3)}
+                  className="px-3 py-2 rounded-xl bg-stone-800 hover:bg-stone-700 text-stone-300 text-xs font-medium transition"
+                >
+                  {language === 'zh-TW' ? '跳過計時' : 'Skip Timer'}
+                </button>
+
                 <button
                   type="button"
                   onClick={() => setStep(2)}
-                  className="flex items-center space-x-1.5 px-4 py-2 rounded-xl bg-gradient-to-r from-amber-600 to-amber-500 hover:from-amber-500 hover:to-amber-400 text-white text-xs font-bold transition shadow-md shadow-amber-900/30"
+                  className="flex items-center space-x-1.5 px-4 py-2 rounded-xl bg-gradient-to-r from-amber-600 to-amber-500 hover:from-amber-500 hover:to-amber-400 text-white text-xs font-bold transition shadow-md shadow-amber-900/30 active:scale-95"
                 >
                   <span>{language === 'zh-TW' ? '進入計時' : 'Start Timer'}</span>
                   <ChevronRight className="w-4 h-4" />
@@ -898,25 +957,47 @@ export const BrewSessionModal: React.FC = () => {
             )}
 
             {step === 2 && (
-              <button
-                type="button"
-                onClick={() => setStep(3)}
-                className="flex items-center space-x-1.5 px-4 py-2 rounded-xl bg-amber-600 hover:bg-amber-500 text-white text-xs font-bold transition"
-              >
-                <span>{language === 'zh-TW' ? '進入杯測評分' : 'Evaluate Tasting'}</span>
-                <ChevronRight className="w-4 h-4" />
-              </button>
+              <>
+                <button
+                  type="button"
+                  onClick={handleSaveBrewLater}
+                  className="flex items-center space-x-1 px-3 py-2 rounded-xl bg-stone-900 hover:bg-stone-800 text-stone-300 text-xs font-semibold border border-stone-800 transition"
+                  title="沖煮完畢，待降溫品飲後再補填杯測評分"
+                >
+                  <Bookmark className="w-3.5 h-3.5 text-amber-400" />
+                  <span>{language === 'zh-TW' ? '沖完稍後杯測' : 'Save & Cup Later'}</span>
+                </button>
+
+                <button
+                  type="button"
+                  onClick={() => setStep(3)}
+                  className="flex items-center space-x-1.5 px-4 py-2 rounded-xl bg-gradient-to-r from-amber-600 to-amber-500 hover:from-amber-500 hover:to-amber-400 text-white text-xs font-bold transition shadow-md shadow-amber-900/30 active:scale-95"
+                >
+                  <span>{language === 'zh-TW' ? '進入杯測評分' : 'Evaluate Tasting'}</span>
+                  <ChevronRight className="w-4 h-4" />
+                </button>
+              </>
             )}
 
             {step === 3 && (
-              <button
-                type="button"
-                onClick={() => setStep(4)}
-                className="flex items-center space-x-1.5 px-4 py-2 rounded-xl bg-amber-600 hover:bg-amber-500 text-white text-xs font-bold transition"
-              >
-                <span>{language === 'zh-TW' ? '查看診斷與保存' : 'View Diagnosis & Save'}</span>
-                <ChevronRight className="w-4 h-4" />
-              </button>
+              <>
+                <button
+                  type="button"
+                  onClick={handleSaveBrew}
+                  className="px-3.5 py-2 rounded-xl bg-stone-800 hover:bg-stone-700 text-stone-300 text-xs font-medium transition"
+                >
+                  {language === 'zh-TW' ? '直接保存' : 'Save Now'}
+                </button>
+
+                <button
+                  type="button"
+                  onClick={() => setStep(4)}
+                  className="flex items-center space-x-1.5 px-4 py-2 rounded-xl bg-gradient-to-r from-amber-600 to-amber-500 hover:from-amber-500 hover:to-amber-400 text-white text-xs font-bold transition shadow-md shadow-amber-900/30 active:scale-95"
+                >
+                  <span>{language === 'zh-TW' ? '下一步：調校與診斷' : 'Dial-in & Diagnosis'}</span>
+                  <ChevronRight className="w-4 h-4" />
+                </button>
+              </>
             )}
 
             {step === 4 && (
@@ -926,7 +1007,7 @@ export const BrewSessionModal: React.FC = () => {
                 className="flex items-center space-x-1.5 px-6 py-2.5 rounded-xl bg-gradient-to-r from-amber-600 to-amber-500 hover:from-amber-500 hover:to-amber-400 text-white text-xs sm:text-sm font-bold transition shadow-lg shadow-amber-900/40 transform active:scale-95"
               >
                 <Check className="w-4 h-4" />
-                <span>{language === 'zh-TW' ? '保存手沖日誌' : 'Save Brew Session'}</span>
+                <span>{language === 'zh-TW' ? '保存完整日誌' : 'Save Brew Log'}</span>
               </button>
             )}
           </div>

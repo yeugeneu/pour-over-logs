@@ -100,8 +100,10 @@ export interface Translations {
     searchTagPlaceholder: string;
     tdsOptional: string;
     eyPercent: string;
+    radarTitle: string;
     dialinPlanNotes: string;
     markAsGolden: string;
+    markAsGoldenDesc: string;
   };
   advisor: {
     title: string;

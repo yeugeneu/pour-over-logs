@@ -109,6 +109,7 @@ export interface BrewLog {
   dialinAdjustmentNotes?: string;
   overallScore: number; // 1 - 10
   isGolden: boolean;
+  isTastingPending?: boolean; // True if saved right after brewing to evaluate later
   notes?: string;
 }
 

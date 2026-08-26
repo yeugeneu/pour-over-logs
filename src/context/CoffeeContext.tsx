@@ -57,6 +57,13 @@ interface CoffeeContextType {
   openBeanDetailModal: (beanId: string) => void;
   closeBeanDetailModal: () => void;
 
+  // Tasting & Dial-in Editor Modal
+  isTastingModalOpen: boolean;
+  tastingLogId: string | null;
+  initialTastingTab: 'sensory' | 'dialin';
+  openTastingModal: (logId: string, initialTab?: 'sensory' | 'dialin') => void;
+  closeTastingModal: () => void;
+
   // CRUD Operations
   addBean: (bean: Omit<CoffeeBean, 'id' | 'createdAt'>) => CoffeeBean;
   updateBean: (id: string, updates: Partial<CoffeeBean>) => void;
@@ -131,6 +138,11 @@ export const CoffeeProvider: React.FC<{ children: React.ReactNode }> = ({ childr
   // Bean detail modal state
   const [isBeanDetailModalOpen, setIsBeanDetailModalOpen] = useState(false);
   const [detailBeanId, setDetailBeanId] = useState<string | null>(null);
+
+  // Tasting & Dial-in Editor Modal state
+  const [isTastingModalOpen, setIsTastingModalOpen] = useState(false);
+  const [tastingLogId, setTastingLogId] = useState<string | null>(null);
+  const [initialTastingTab, setInitialTastingTab] = useState<'sensory' | 'dialin'>('sensory');
 
   // Persist to localStorage
   useEffect(() => {
@@ -294,6 +306,17 @@ export const CoffeeProvider: React.FC<{ children: React.ReactNode }> = ({ childr
   const closeBeanDetailModal = () => {
     setIsBeanDetailModalOpen(false);
     setDetailBeanId(null);
+  };
+
+  const openTastingModal = (logId: string, initialTab: 'sensory' | 'dialin' = 'sensory') => {
+    setTastingLogId(logId);
+    setInitialTastingTab(initialTab);
+    setIsTastingModalOpen(true);
+  };
+
+  const closeTastingModal = () => {
+    setIsTastingModalOpen(false);
+    setTastingLogId(null);
   };
 
   const addBean = (beanData: Omit<CoffeeBean, 'id' | 'createdAt'>): CoffeeBean => {
@@ -493,6 +516,11 @@ export const CoffeeProvider: React.FC<{ children: React.ReactNode }> = ({ childr
         detailBeanId,
         openBeanDetailModal,
         closeBeanDetailModal,
+        isTastingModalOpen,
+        tastingLogId,
+        initialTastingTab,
+        openTastingModal,
+        closeTastingModal,
         addBean,
         updateBean,
         deleteBean,

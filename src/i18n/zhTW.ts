@@ -100,8 +100,10 @@ export const zhTW: Translations = {
     searchTagPlaceholder: '新增或搜尋風味標籤 (如: 茉莉花、水蜜桃...)',
     tdsOptional: '光學濃度計 TDS % (選填)',
     eyPercent: '萃取率 (Extraction Yield %)',
+    radarTitle: '感官風味雷達',
     dialinPlanNotes: '本次調校筆記與下把微調計畫',
     markAsGolden: '標記為此豆之「神參數 (Golden Recipe)」',
+    markAsGoldenDesc: '未來針對此支咖啡豆開沖時，系統將預設帶入此組絕佳參數與注水節奏',
   },
   advisor: {
     title: '手沖萃取智慧診斷教練 (Dial-in Barista Advisor)',

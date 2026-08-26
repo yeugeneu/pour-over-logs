@@ -100,8 +100,10 @@ export const en: Translations = {
     searchTagPlaceholder: 'Add or search flavor notes (e.g., Jasmine, Peach...)',
     tdsOptional: 'Refractometer TDS % (Optional)',
     eyPercent: 'Extraction Yield (EY %)',
+    radarTitle: 'Sensory Flavor Radar',
     dialinPlanNotes: 'Dial-in Notes & Next Brew Tweak Plan',
     markAsGolden: 'Bookmark as Golden Recipe for this bean',
+    markAsGoldenDesc: 'This recipe will be automatically loaded as the default dial-in recipe for this bean',
   },
   advisor: {
     title: 'Dial-in Barista Diagnostic Engine',

@@ -15,6 +15,7 @@ export const BeanDetailModal: React.FC = () => {
     deleteBean,
     toggleGoldenRecipe,
     deleteLog,
+    openTastingModal,
     getBeanById,
     getLogsByBeanId,
     getGoldenLogForBean,
@@ -279,7 +280,24 @@ export const BeanDetailModal: React.FC = () => {
                           </div>
                         </div>
 
-                        <div className="flex items-center space-x-3">
+                        <div className="flex items-center space-x-2.5">
+                          <button
+                            type="button"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              openTastingModal(log.id, 'sensory');
+                            }}
+                            className={`px-2 py-1 rounded-lg text-xs font-semibold border flex items-center gap-1 transition ${
+                              log.isTastingPending
+                                ? 'bg-amber-500 text-stone-950 border-amber-400 font-bold'
+                                : 'bg-stone-900 hover:bg-stone-800 text-amber-300 border-stone-800'
+                            }`}
+                            title="編輯感官杯測評分與調校筆記"
+                          >
+                            <Edit3 className="w-3 h-3" />
+                            <span>{log.isTastingPending ? '補填杯測' : '評分/調校'}</span>
+                          </button>
+
                           <span className="text-sm font-bold font-mono text-amber-400">
                             {log.overallScore.toFixed(1)} ★
                           </span>
@@ -315,7 +333,17 @@ export const BeanDetailModal: React.FC = () => {
                             <div className="space-y-1 text-xs">
                               {log.dialinAdjustmentNotes && (
                                 <div className="p-2 rounded-xl bg-stone-900 border border-stone-800 text-stone-300">
-                                  <span className="text-amber-400 font-semibold block text-[11px]">調校筆記：</span>
+                                  <div className="flex items-center justify-between">
+                                    <span className="text-amber-400 font-semibold block text-[11px]">調校筆記：</span>
+                                    <button
+                                      type="button"
+                                      onClick={() => openTastingModal(log.id, 'dialin')}
+                                      className="text-[10px] text-amber-400/80 hover:text-amber-300 flex items-center gap-0.5"
+                                    >
+                                      <Edit3 className="w-3 h-3" />
+                                      <span>編輯</span>
+                                    </button>
+                                  </div>
                                   <p className="text-[11px] leading-relaxed mt-0.5">{log.dialinAdjustmentNotes}</p>
                                 </div>
                               )}
@@ -328,18 +356,29 @@ export const BeanDetailModal: React.FC = () => {
                           </div>
 
                           {/* Log Actions */}
-                          <div className="flex items-center justify-between pt-2 border-t border-stone-800/60 text-xs">
-                            <button
-                              onClick={() => toggleGoldenRecipe(log.id)}
-                              className={`flex items-center space-x-1 px-2.5 py-1 rounded-lg border transition ${
-                                log.isGolden
-                                  ? 'bg-amber-500/20 text-amber-300 border-amber-500/40'
-                                  : 'bg-stone-900 text-stone-400 border-stone-800 hover:text-stone-200'
-                              }`}
-                            >
-                              <Award className="w-3.5 h-3.5" />
-                              <span>{log.isGolden ? '取消神參數' : '設為神參數'}</span>
-                            </button>
+                          <div className="flex flex-wrap items-center justify-between gap-2 pt-2 border-t border-stone-800/60 text-xs">
+                            <div className="flex items-center space-x-2">
+                              <button
+                                onClick={() => toggleGoldenRecipe(log.id)}
+                                className={`flex items-center space-x-1 px-2.5 py-1 rounded-lg border transition ${
+                                  log.isGolden
+                                    ? 'bg-amber-500/20 text-amber-300 border-amber-500/40'
+                                    : 'bg-stone-900 text-stone-400 border-stone-800 hover:text-stone-200'
+                                }`}
+                              >
+                                <Award className="w-3.5 h-3.5" />
+                                <span>{log.isGolden ? '取消神參數' : '設為神參數'}</span>
+                              </button>
+
+                              <button
+                                type="button"
+                                onClick={() => openTastingModal(log.id, 'sensory')}
+                                className="flex items-center space-x-1 px-2.5 py-1 rounded-lg bg-stone-900 hover:bg-stone-800 text-stone-300 border border-stone-800 transition"
+                              >
+                                <Edit3 className="w-3 h-3 text-amber-400" />
+                                <span>編輯杯測/調校</span>
+                              </button>
+                            </div>
 
                             <div className="flex space-x-2">
                               <button

@@ -3,10 +3,10 @@ import { useCoffee } from '../../context/CoffeeContext';
 import { useI18n } from '../../i18n';
 import { formatTime } from '../../utils/coffeeMath';
 import { FlavorRadarChart } from '../sensory/FlavorRadarChart';
-import { Search, Award, Coffee, Trash2, ChevronDown, ChevronUp } from 'lucide-react';
+import { Search, Award, Coffee, Trash2, ChevronDown, ChevronUp, Edit3, Plus } from 'lucide-react';
 
 export const BrewHistoryList: React.FC = () => {
-  const { beans, logs, getBeanById, openBrewModal, deleteLog, toggleGoldenRecipe } = useCoffee();
+  const { beans, logs, getBeanById, openBrewModal, openTastingModal, deleteLog, toggleGoldenRecipe } = useCoffee();
   const { language, t } = useI18n();
 
   const [searchQuery, setSearchQuery] = useState('');
@@ -149,7 +149,29 @@ export const BrewHistoryList: React.FC = () => {
                     </div>
                   </div>
 
-                  <div className="flex items-center space-x-4 self-end sm:self-center">
+                  <div className="flex items-center space-x-3 self-end sm:self-center">
+                    {/* Quick Edit Tasting Button */}
+                    <button
+                      type="button"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        openTastingModal(log.id, log.isTastingPending ? 'sensory' : 'sensory');
+                      }}
+                      className={`px-2.5 py-1.5 rounded-xl text-xs font-semibold border flex items-center gap-1.5 transition shadow-sm ${
+                        log.isTastingPending
+                          ? 'bg-amber-500 text-stone-950 border-amber-400 font-bold hover:bg-amber-400 animate-pulse'
+                          : 'bg-stone-950/80 hover:bg-stone-800 text-amber-300 border-stone-800 hover:border-amber-500/40'
+                      }`}
+                      title={language === 'zh-TW' ? '編輯感官杯測評分與調校筆記' : 'Edit Tasting & Dial-in'}
+                    >
+                      <Edit3 className="w-3.5 h-3.5" />
+                      <span>
+                        {log.isTastingPending
+                          ? (language === 'zh-TW' ? '補填杯測評分' : 'Add Tasting')
+                          : (language === 'zh-TW' ? '編輯杯測/調校' : 'Edit Tasting')}
+                      </span>
+                    </button>
+
                     <div className="text-right">
                       <div className="text-lg font-black font-mono text-amber-400">
                         {log.overallScore.toFixed(1)} <span className="text-xs text-stone-400">★</span>
@@ -189,15 +211,34 @@ export const BrewHistoryList: React.FC = () => {
                       <FlavorRadarChart sensory={log.sensory} size="sm" />
 
                       <div className="space-y-2 text-xs">
-                        {log.dialinAdjustmentNotes && (
+                        {log.dialinAdjustmentNotes ? (
                           <div className="p-3 rounded-2xl bg-stone-950 border border-stone-800 text-stone-300">
-                            <span className="text-amber-400 font-semibold block text-xs">
-                              調校筆記 (Dial-in Notes)：
-                            </span>
+                            <div className="flex items-center justify-between">
+                              <span className="text-amber-400 font-semibold block text-xs">
+                                調校筆記 (Dial-in Notes)：
+                              </span>
+                              <button
+                                type="button"
+                                onClick={() => openTastingModal(log.id, 'dialin')}
+                                className="text-[11px] text-amber-400/80 hover:text-amber-300 flex items-center gap-0.5"
+                              >
+                                <Edit3 className="w-3 h-3" />
+                                <span>編輯</span>
+                              </button>
+                            </div>
                             <p className="text-xs leading-relaxed mt-1 text-stone-300">
                               {log.dialinAdjustmentNotes}
                             </p>
                           </div>
+                        ) : (
+                          <button
+                            type="button"
+                            onClick={() => openTastingModal(log.id, 'dialin')}
+                            className="w-full p-2.5 rounded-2xl bg-stone-950/60 border border-dashed border-stone-800 hover:border-amber-500/40 text-stone-400 hover:text-amber-300 text-xs text-center transition flex items-center justify-center gap-1"
+                          >
+                            <Plus className="w-3.5 h-3.5" />
+                            <span>新增調校筆記與下把微調計畫</span>
+                          </button>
                         )}
 
                         <div className="grid grid-cols-2 gap-2 text-[11px] text-stone-400 bg-stone-950/60 p-2.5 rounded-xl border border-stone-800">
@@ -210,18 +251,29 @@ export const BrewHistoryList: React.FC = () => {
                     </div>
 
                     {/* Footer Actions */}
-                    <div className="flex items-center justify-between pt-2 border-t border-stone-800/60">
-                      <button
-                        onClick={() => toggleGoldenRecipe(log.id)}
-                        className={`flex items-center space-x-1.5 px-3 py-1.5 rounded-xl border text-xs font-semibold transition ${
-                          log.isGolden
-                            ? 'bg-amber-500/20 text-amber-300 border-amber-500/40'
-                            : 'bg-stone-950 text-stone-400 border-stone-800 hover:text-stone-200'
-                        }`}
-                      >
-                        <Award className="w-3.5 h-3.5" />
-                        <span>{log.isGolden ? '取消神參數' : '標記為神參數'}</span>
-                      </button>
+                    <div className="flex flex-wrap items-center justify-between gap-2 pt-2 border-t border-stone-800/60">
+                      <div className="flex items-center space-x-2">
+                        <button
+                          onClick={() => toggleGoldenRecipe(log.id)}
+                          className={`flex items-center space-x-1.5 px-3 py-1.5 rounded-xl border text-xs font-semibold transition ${
+                            log.isGolden
+                              ? 'bg-amber-500/20 text-amber-300 border-amber-500/40'
+                              : 'bg-stone-950 text-stone-400 border-stone-800 hover:text-stone-200'
+                          }`}
+                        >
+                          <Award className="w-3.5 h-3.5" />
+                          <span>{log.isGolden ? '取消神參數' : '標記為神參數'}</span>
+                        </button>
+
+                        <button
+                          type="button"
+                          onClick={() => openTastingModal(log.id, 'sensory')}
+                          className="flex items-center space-x-1.5 px-3 py-1.5 rounded-xl bg-stone-950 hover:bg-stone-800 text-stone-300 text-xs font-semibold border border-stone-800 transition"
+                        >
+                          <Edit3 className="w-3.5 h-3.5 text-amber-400" />
+                          <span>{language === 'zh-TW' ? '編輯杯測與調校' : 'Edit Tasting/Dial-in'}</span>
+                        </button>
+                      </div>
 
                       <div className="flex items-center space-x-2">
                         <button
