@@ -7,6 +7,16 @@ export const ACAIA_BM71_NOTIFY_CHAR_UUID = '49535343-1e4d-4bd9-ba61-23c647249616
 
 export const ACAIA_CSR_SERVICE_UUID = '00001820-0000-1000-8000-00805f9b34fb';
 export const ACAIA_CSR_CHAR_UUID = '00002a80-0000-1000-8000-00805f9b34fb';
+export const ACAIA_OLD_CSR_SERVICE_UUID = '0000ffe0-0000-1000-8000-00805f9b34fb';
+export const ACAIA_OLD_CSR_CHAR_UUID = '0000ffe1-0000-1000-8000-00805f9b34fb';
+
+export function isIOSorBluefy(): boolean {
+  if (typeof navigator === 'undefined') return false;
+  const ua = (navigator.userAgent || navigator.vendor || '').toLowerCase();
+  return /iphone|ipad|ipod/.test(ua) || ua.includes('bluefy');
+}
+
+const delay = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
 
 const HEADER1 = 0xef;
 const HEADER2 = 0xdd;
@@ -134,34 +144,50 @@ export class AcaiaScaleDriver {
   /**
    * Request device & establish Web Bluetooth GATT connection
    */
-  public async connect(): Promise<ScaleDeviceInfo> {
+  public async connect(options?: { scanAll?: boolean }): Promise<ScaleDeviceInfo> {
     if (typeof navigator === 'undefined' || !navigator.bluetooth) {
       throw new Error('Web Bluetooth API is not supported in this browser. Please use Google Chrome, Microsoft Edge, Opera, or Bluefy (iOS).');
     }
 
     this.disconnect();
 
+    const optionalServices: string[] = [
+      ACAIA_BM71_SERVICE_UUID,
+      ACAIA_CSR_SERVICE_UUID,
+      ACAIA_OLD_CSR_SERVICE_UUID,
+      '00001820-0000-1000-8000-00805f9b34fb',
+      '0000ffe0-0000-1000-8000-00805f9b34fb',
+      '1820',
+      'ffe0',
+    ];
+
+    const requestOptions: RequestDeviceOptions = options?.scanAll
+      ? {
+          acceptAllDevices: true,
+          optionalServices,
+        }
+      : {
+          filters: [
+            { namePrefix: 'ACAIA' },
+            { namePrefix: 'Acaia' },
+            { namePrefix: 'acaia' },
+            { namePrefix: 'PEARL' },
+            { namePrefix: 'Pearl' },
+            { namePrefix: 'pearl' },
+            { namePrefix: 'LUNAR' },
+            { namePrefix: 'Lunar' },
+            { namePrefix: 'lunar' },
+            { namePrefix: 'PYXIS' },
+            { namePrefix: 'Pyxis' },
+            { namePrefix: 'CINCO' },
+            { namePrefix: 'PROCH' },
+            { namePrefix: 'FELICITA' },
+          ],
+          optionalServices,
+        };
+
     try {
-      const device = await navigator.bluetooth.requestDevice({
-        filters: [
-          { namePrefix: 'ACAIA' },
-          { namePrefix: 'Acaia' },
-          { namePrefix: 'acaia' },
-          { namePrefix: 'PEARL' },
-          { namePrefix: 'Pearl' },
-          { namePrefix: 'pearl' },
-          { namePrefix: 'LUNAR' },
-          { namePrefix: 'Lunar' },
-          { namePrefix: 'PYXIS' },
-          { namePrefix: 'CINCO' },
-          { namePrefix: 'PROCH' },
-        ],
-        optionalServices: [
-          ACAIA_BM71_SERVICE_UUID,
-          ACAIA_CSR_SERVICE_UUID,
-          0x1820,
-        ],
-      });
+      const device = await navigator.bluetooth.requestDevice(requestOptions);
 
       this.device = device;
       device.addEventListener('gattserverdisconnected', this.handleGattDisconnected);
@@ -170,39 +196,64 @@ export class AcaiaScaleDriver {
       if (!server) throw new Error('Failed to connect to scale GATT server');
       this.gattServer = server;
 
-      // Check whether this scale uses Microchip BM71 ISSC service or Old CSR service
+      // Stabilization delay for iOS CoreBluetooth / Bluefy
+      await delay(300);
+
+      // Check whether this scale uses Microchip BM71 ISSC service or CSR service
       let service: BluetoothRemoteGATTService | null = null;
       try {
         service = await server.getPrimaryService(ACAIA_BM71_SERVICE_UUID);
         this.isBM71 = true;
       } catch {
+        await delay(150);
         // Fallback to CSR service
         try {
           service = await server.getPrimaryService(ACAIA_CSR_SERVICE_UUID);
           this.isBM71 = false;
         } catch {
-          service = await server.getPrimaryService(0x1820);
-          this.isBM71 = false;
+          await delay(150);
+          try {
+            service = await server.getPrimaryService(ACAIA_OLD_CSR_SERVICE_UUID);
+            this.isBM71 = false;
+          } catch {
+            service = await server.getPrimaryService('00001820-0000-1000-8000-00805f9b34fb');
+            this.isBM71 = false;
+          }
         }
       }
 
       if (!service) throw new Error('Could not find compatible Acaia GATT service');
 
+      await delay(150);
+
       if (this.isBM71) {
         this.writeChar = await service.getCharacteristic(ACAIA_BM71_WRITE_CHAR_UUID);
         this.notifyChar = await service.getCharacteristic(ACAIA_BM71_NOTIFY_CHAR_UUID);
       } else {
-        const char = await service.getCharacteristic(ACAIA_CSR_CHAR_UUID);
-        this.writeChar = char;
-        this.notifyChar = char;
+        try {
+          const char = await service.getCharacteristic(ACAIA_CSR_CHAR_UUID);
+          this.writeChar = char;
+          this.notifyChar = char;
+        } catch {
+          const char = await service.getCharacteristic(ACAIA_OLD_CSR_CHAR_UUID);
+          this.writeChar = char;
+          this.notifyChar = char;
+        }
       }
+
+      await delay(150);
 
       // Start notifications
       await this.notifyChar.startNotifications();
       this.notifyChar.addEventListener('characteristicvaluechanged', this.handleNotification);
+      // Dual-bind for Bluefy / iOS WKWebView event bridge
+      (this.notifyChar as any).oncharacteristicvaluechanged = this.handleNotification;
+
+      await delay(250);
 
       // Perform Handshake & Request Notifications
       await this.sendAuth();
+      await delay(200);
       await this.sendNotificationRequest();
 
       // Start Heartbeat interval
@@ -289,6 +340,7 @@ export class AcaiaScaleDriver {
     if (this.notifyChar) {
       try {
         this.notifyChar.removeEventListener('characteristicvaluechanged', this.handleNotification);
+        (this.notifyChar as any).oncharacteristicvaluechanged = null;
         await this.notifyChar.stopNotifications();
       } catch {}
       this.notifyChar = null;
@@ -413,15 +465,29 @@ export class AcaiaScaleDriver {
   private async sendCommand(msgType: number, payload: number[]): Promise<void> {
     if (!this.writeChar) return;
     const packet = this.encodePacket(msgType, payload);
-    try {
-      if (this.writeChar.writeValueWithResponse) {
-        await this.writeChar.writeValueWithResponse(packet);
-      } else {
-        await this.writeChar.writeValue(packet);
-      }
-    } catch {
+    const char = this.writeChar as any;
+
+    if (typeof char.writeValueWithResponse === 'function') {
       try {
-        await this.writeChar.writeValueWithoutResponse(packet);
+        await char.writeValueWithResponse(packet);
+        return;
+      } catch {
+        // Fallback below
+      }
+    }
+
+    if (typeof char.writeValue === 'function') {
+      try {
+        await char.writeValue(packet);
+        return;
+      } catch {
+        // Fallback below
+      }
+    }
+
+    if (typeof char.writeValueWithoutResponse === 'function') {
+      try {
+        await char.writeValueWithoutResponse(packet);
       } catch (err) {
         console.warn('Error sending command to Acaia scale:', err);
       }

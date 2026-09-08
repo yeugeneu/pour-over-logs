@@ -19,7 +19,7 @@ interface ScaleContextType {
 
   openScaleModal: () => void;
   closeScaleModal: () => void;
-  connectScale: () => Promise<void>;
+  connectScale: (options?: { scanAll?: boolean }) => Promise<void>;
   disconnectScale: () => Promise<void>;
   tare: () => Promise<void>;
   startTimer: () => Promise<void>;
@@ -101,12 +101,12 @@ export const ScaleProvider: React.FC<{ children: React.ReactNode }> = ({ childre
   const openScaleModal = () => setIsScaleModalOpen(true);
   const closeScaleModal = () => setIsScaleModalOpen(false);
 
-  const connectScale = useCallback(async () => {
+  const connectScale = useCallback(async (options?: { scanAll?: boolean }) => {
     setErrorMessage(null);
     setConnectionState('connecting');
 
     try {
-      const info = await acaiaScale.connect();
+      const info = await acaiaScale.connect(options);
       setDeviceInfo(info);
       setConnectionState('connected');
       if (preferences.soundFeedback) {

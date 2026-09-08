@@ -215,5 +215,13 @@ export const en: Translations = {
     actualWeight: 'Actual Weight',
     targetWeight: 'Target Weight',
     testPour: 'Simulate Water Pour (+50g)',
+    scanAll: 'Scan All Devices (iOS / Bluefy)',
+    troubleshootingTitle: 'Having Trouble Connecting on iPhone / Bluefy?',
+    tipLaptopTitle: 'Disconnect from Laptop first',
+    tipLaptopDesc: 'Acaia scales only connect to 1 device at a time. If you connected on your computer, disconnect it or close the tab before scanning on your phone.',
+    tipPowerCycleTitle: 'Power cycle your scale',
+    tipPowerCycleDesc: 'Turn your Acaia scale off and back on so it re-broadcasts its Bluetooth advertising signal.',
+    tipBluefyTitle: 'Bluefy permissions & scanner',
+    tipBluefyDesc: 'Ensure Bluetooth is allowed in iOS Settings > Bluefy, and tap "Scan All Devices" if your scale does not appear in the filtered list.',
   },
 };

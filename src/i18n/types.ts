@@ -215,5 +215,13 @@ export interface Translations {
     actualWeight: string;
     targetWeight: string;
     testPour: string;
+    scanAll: string;
+    troubleshootingTitle: string;
+    tipLaptopTitle: string;
+    tipLaptopDesc: string;
+    tipPowerCycleTitle: string;
+    tipPowerCycleDesc: string;
+    tipBluefyTitle: string;
+    tipBluefyDesc: string;
   };
 }

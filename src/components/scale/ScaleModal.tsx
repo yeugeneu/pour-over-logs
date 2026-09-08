@@ -11,6 +11,8 @@ import {
   Volume2,
   AlertTriangle,
   Droplets,
+  Radio,
+  Smartphone,
 } from 'lucide-react';
 
 export const ScaleModal: React.FC = () => {
@@ -137,7 +139,7 @@ export const ScaleModal: React.FC = () => {
               ) : (
                 <button
                   type="button"
-                  onClick={connectScale}
+                  onClick={() => connectScale()}
                   disabled={!isWebBluetoothSupported || isConnecting}
                   className={`flex items-center space-x-1.5 px-4 py-2 rounded-xl text-xs font-bold transition shadow-md ${
                     !isWebBluetoothSupported
@@ -151,11 +153,45 @@ export const ScaleModal: React.FC = () => {
               )}
             </div>
 
-            {/* Scale Connection Tip */}
+            {/* Scale Connection Tip & Bluefy Troubleshooting Guide */}
             {!isConnected && isWebBluetoothSupported && (
-              <p className="text-[11px] text-stone-400 leading-relaxed border-t border-stone-800/60 pt-2.5">
-                💡 <strong>Pairing tip:</strong> Power on your Acaia scale and ensure the official Acaia mobile app is closed, as Acaia scales support only 1 Bluetooth connection at a time.
-              </p>
+              <div className="border-t border-stone-800/60 pt-3 space-y-2.5">
+                <div className="flex flex-wrap items-center justify-between gap-2">
+                  <span className="text-[11px] text-stone-400">
+                    Trouble finding your scale?
+                  </span>
+                  <button
+                    type="button"
+                    onClick={() => connectScale({ scanAll: true })}
+                    disabled={isConnecting}
+                    className="flex items-center space-x-1.5 px-3 py-1.5 rounded-xl text-xs font-semibold bg-stone-800/90 hover:bg-stone-700 text-stone-300 hover:text-white border border-stone-700 transition shadow-sm"
+                  >
+                    <Radio className="w-3.5 h-3.5 text-amber-400" />
+                    <span>{t.scale.scanAll}</span>
+                  </button>
+                </div>
+
+                <div className="p-3.5 rounded-xl bg-amber-500/10 border border-amber-500/20 text-xs space-y-1.5">
+                  <div className="flex items-center space-x-1.5 text-amber-300 font-semibold">
+                    <Smartphone className="w-4 h-4 shrink-0" />
+                    <span>{t.scale.troubleshootingTitle}</span>
+                  </div>
+                  <ul className="text-stone-300 space-y-1 text-[11px] leading-relaxed list-disc pl-4">
+                    <li>
+                      <strong className="text-amber-200">{t.scale.tipLaptopTitle}:</strong>{' '}
+                      {t.scale.tipLaptopDesc}
+                    </li>
+                    <li>
+                      <strong className="text-amber-200">{t.scale.tipPowerCycleTitle}:</strong>{' '}
+                      {t.scale.tipPowerCycleDesc}
+                    </li>
+                    <li>
+                      <strong className="text-amber-200">{t.scale.tipBluefyTitle}:</strong>{' '}
+                      {t.scale.tipBluefyDesc}
+                    </li>
+                  </ul>
+                </div>
+              </div>
             )}
           </div>
 

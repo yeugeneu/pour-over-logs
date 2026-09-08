@@ -215,5 +215,13 @@ export const zhTW: Translations = {
     actualWeight: '實際水量',
     targetWeight: '目標水量',
     testPour: '模擬注水測試 (+50g)',
+    scanAll: '搜尋所有裝置 (iOS / Bluefy 專用)',
+    troubleshootingTitle: '在 iPhone / Bluefy 上無法連線？',
+    tipLaptopTitle: '先斷開電腦上的連線',
+    tipLaptopDesc: 'Acaia 電子秤同一時間僅允許連接 1 台設備。若剛才在筆電上已連線，請先在筆電斷開或關閉分頁，手機才能搜尋到。',
+    tipPowerCycleTitle: '重啟電子秤電源',
+    tipPowerCycleDesc: '將 Acaia 電子秤關機後重新開機，讓電子秤重新發送藍芽廣播信號。',
+    tipBluefyTitle: 'Bluefy 藍芽權限與搜尋',
+    tipBluefyDesc: '請至 iPhone「設定」>「Bluefy」確認已開啟藍芽權限。若列表中找不到電子秤，請點擊「搜尋所有裝置」。',
   },
 };
