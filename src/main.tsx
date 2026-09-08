@@ -2,6 +2,7 @@ import React from 'react';
 import ReactDOM from 'react-dom/client';
 import { App } from './App';
 import { CoffeeProvider } from './context/CoffeeContext';
+import { ScaleProvider } from './context/ScaleContext';
 import { ThemeProvider } from './context/ThemeContext';
 import { I18nProvider } from './i18n';
 import './index.css';
@@ -11,7 +12,9 @@ ReactDOM.createRoot(document.getElementById('root')!).render(
     <I18nProvider>
       <ThemeProvider>
         <CoffeeProvider>
-          <App />
+          <ScaleProvider>
+            <App />
+          </ScaleProvider>
         </CoffeeProvider>
       </ThemeProvider>
     </I18nProvider>

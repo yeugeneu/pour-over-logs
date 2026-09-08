@@ -191,4 +191,29 @@ export interface Translations {
     scanSuccess: string;
     scanError: string;
   };
+  scale: {
+    connect: string;
+    disconnect: string;
+    connected: string;
+    connecting: string;
+    disconnected: string;
+    title: string;
+    subtitle: string;
+    liveWeight: string;
+    flowRate: string;
+    battery: string;
+    tare: string;
+    autoTare: string;
+    autoStartOnFlow: string;
+    simulationMode: string;
+    simulationBadge: string;
+    unsupportedTitle: string;
+    unsupportedDesc: string;
+    syncDose: string;
+    dosedSuccess: string;
+    pourCurve: string;
+    actualWeight: string;
+    targetWeight: string;
+    testPour: string;
+  };
 }

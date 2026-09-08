@@ -3,7 +3,8 @@ import { useCoffee } from '../../context/CoffeeContext';
 import { useI18n } from '../../i18n';
 import { formatTime } from '../../utils/coffeeMath';
 import { FlavorRadarChart } from '../sensory/FlavorRadarChart';
-import { Search, Award, Coffee, Trash2, ChevronDown, ChevronUp, Edit3, Plus } from 'lucide-react';
+import { LivePourCurveChart } from '../brew/LivePourCurveChart';
+import { Search, Award, Coffee, Trash2, ChevronDown, ChevronUp, Edit3, Plus, Bluetooth } from 'lucide-react';
 
 export const BrewHistoryList: React.FC = () => {
   const { beans, logs, getBeanById, openBrewModal, openTastingModal, deleteLog, toggleGoldenRecipe } = useCoffee();
@@ -137,6 +138,12 @@ export const BrewHistoryList: React.FC = () => {
                           <Award className="w-3 h-3 text-amber-400" /> 神參數
                         </span>
                       )}
+                      {log.scaleModel && (
+                        <span className="text-[10px] px-2 py-0.5 rounded-full bg-cyan-500/10 text-cyan-300 border border-cyan-500/20 flex items-center gap-1 font-mono">
+                          <Bluetooth className="w-2.5 h-2.5 text-cyan-400" />
+                          <span>{log.scaleModel}</span>
+                        </span>
+                      )}
                     </div>
 
                     <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-stone-400 font-mono">
@@ -249,6 +256,29 @@ export const BrewHistoryList: React.FC = () => {
                         </div>
                       </div>
                     </div>
+
+                    {/* Scale Pour Curve */}
+                    {log.weightCurve && log.weightCurve.length > 0 && (
+                      <div className="space-y-1.5 pt-2 border-t border-stone-800/60">
+                        <div className="text-xs font-semibold text-stone-300 flex items-center justify-between">
+                          <span className="flex items-center gap-1.5 text-amber-400">
+                            <Bluetooth className="w-3.5 h-3.5" />
+                            <span>{language === 'zh-TW' ? '萃取注水曲線 (Acaia Scale)' : 'Extraction Pour Curve (Acaia Scale)'}</span>
+                          </span>
+                          {log.drawdownTimeSeconds && (
+                            <span className="text-[10px] text-stone-400 font-mono">
+                              {language === 'zh-TW' ? `下水時間: ${log.drawdownTimeSeconds}s` : `Drawdown: ${log.drawdownTimeSeconds}s`}
+                            </span>
+                          )}
+                        </div>
+                        <LivePourCurveChart
+                          data={log.weightCurve}
+                          stages={log.stages}
+                          totalTargetWater={log.waterGrams}
+                          totalTimeSeconds={log.totalTimeSeconds}
+                        />
+                      </div>
+                    )}
 
                     {/* Footer Actions */}
                     <div className="flex flex-wrap items-center justify-between gap-2 pt-2 border-t border-stone-800/60">

@@ -111,6 +111,8 @@ export interface BrewLog {
   isGolden: boolean;
   isTastingPending?: boolean; // True if saved right after brewing to evaluate later
   notes?: string;
+  scaleModel?: string; // e.g. "Acaia Pearl", "Acaia Pearl 2021"
+  weightCurve?: import('./scale').WeightDataPoint[]; // Real-time pour curve data
 }
 
 export interface DialinRecommendation {

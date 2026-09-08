@@ -2,14 +2,16 @@ import React, { useEffect, useState } from 'react';
 import confetti from 'canvas-confetti';
 import { RECIPE_PRESETS } from '../../data/presets';
 import { useCoffee } from '../../context/CoffeeContext';
+import { useScale } from '../../context/ScaleContext';
 import { useI18n } from '../../i18n';
 import { BrewLog, PourStage, SensoryProfile } from '../../types/coffee';
+import { WeightDataPoint } from '../../types/scale';
 import { calculateDaysOffRoast, calculateExtractionYield, calculateRatio } from '../../utils/coffeeMath';
 import { DialinAdvisorCard } from '../advisor/DialinAdvisorCard';
 import { FlavorRadarChart } from '../sensory/FlavorRadarChart';
 import { FlavorTagSelector } from '../sensory/FlavorTagSelector';
 import { LiveTimer } from './LiveTimer';
-import { X, Coffee, Sliders, ChevronRight, ChevronLeft, Sparkles, Check, Bookmark, Plus, Trash2, Lock, Unlock } from 'lucide-react';
+import { X, Coffee, Sliders, ChevronRight, ChevronLeft, Sparkles, Check, Bookmark, Plus, Trash2, Lock, Unlock, Bluetooth } from 'lucide-react';
 
 export const BrewSessionModal: React.FC = () => {
   const {
@@ -22,6 +24,8 @@ export const BrewSessionModal: React.FC = () => {
     addLog,
     getBeanById,
   } = useCoffee();
+  const { connectionState, telemetry } = useScale();
+  const isScaleConnected = connectionState === 'connected';
   const { language, t } = useI18n();
 
   const [step, setStep] = useState<1 | 2 | 3 | 4>(1);
@@ -66,6 +70,9 @@ export const BrewSessionModal: React.FC = () => {
   const [overallScore, setOverallScore] = useState<number>(8.5);
   const [dialinNotes, setDialinNotes] = useState<string>('');
   const [isGolden, setIsGolden] = useState<boolean>(false);
+  const [savedWeightCurve, setSavedWeightCurve] = useState<WeightDataPoint[] | undefined>();
+  const [savedScaleModel, setSavedScaleModel] = useState<string | undefined>();
+  const [savedDrawdownSeconds, setSavedDrawdownSeconds] = useState<number | undefined>();
 
   // Initialize from preset or duplicate log
   useEffect(() => {
@@ -251,9 +258,18 @@ export const BrewSessionModal: React.FC = () => {
     ? calculateExtractionYield(tdsNum, parsedWater, parsedDose)
     : undefined;
 
-  const handleFinishTimer = (totalSeconds: number, finalStages: PourStage[]) => {
+  const handleFinishTimer = (
+    totalSeconds: number,
+    finalStages: PourStage[],
+    weightCurve?: WeightDataPoint[],
+    scaleModel?: string,
+    drawdownSeconds?: number
+  ) => {
     setTotalTimeSeconds(totalSeconds);
     setStages(finalStages);
+    setSavedWeightCurve(weightCurve);
+    setSavedScaleModel(scaleModel);
+    setSavedDrawdownSeconds(drawdownSeconds);
     setStep(3);
   };
 
@@ -277,7 +293,9 @@ export const BrewSessionModal: React.FC = () => {
       bloomDurationSeconds: stages[0]?.durationSeconds || 40,
       stages,
       totalTimeSeconds,
-      drawdownTimeSeconds: totalTimeSeconds,
+      drawdownTimeSeconds: savedDrawdownSeconds || totalTimeSeconds,
+      scaleModel: savedScaleModel,
+      weightCurve: savedWeightCurve,
       sensory: {
         acidity: 7.5,
         sweetness: 8.0,
@@ -319,7 +337,9 @@ export const BrewSessionModal: React.FC = () => {
       bloomDurationSeconds: stages[0]?.durationSeconds || 40,
       stages,
       totalTimeSeconds,
-      drawdownTimeSeconds: totalTimeSeconds,
+      drawdownTimeSeconds: savedDrawdownSeconds || totalTimeSeconds,
+      scaleModel: savedScaleModel,
+      weightCurve: savedWeightCurve,
       tdsPercent: !isNaN(tdsNum) && tdsNum > 0 ? tdsNum : undefined,
       extractionYieldPercent: eyPercent,
       sensory,
@@ -491,7 +511,20 @@ export const BrewSessionModal: React.FC = () => {
                 <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 bg-stone-950/60 p-3.5 rounded-2xl border border-stone-800">
                   {/* 咖啡粉重 Dose */}
                   <div>
-                    <label className="block text-[11px] text-stone-400 mb-1">{t.brew.dose}</label>
+                    <div className="flex items-center justify-between mb-1">
+                      <label className="block text-[11px] text-stone-400">{t.brew.dose}</label>
+                      {isScaleConnected && (
+                        <button
+                          type="button"
+                          onClick={() => handleDoseChange(telemetry.weight.toFixed(1))}
+                          className="text-[10px] text-amber-400 hover:text-amber-300 font-mono flex items-center gap-0.5"
+                          title="Sync dose from Acaia scale"
+                        >
+                          <Bluetooth className="w-2.5 h-2.5" />
+                          <span>{telemetry.weight.toFixed(1)}g</span>
+                        </button>
+                      )}
+                    </div>
                     <input
                       type="number"
                       step="0.1"
