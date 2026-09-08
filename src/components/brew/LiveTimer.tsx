@@ -6,6 +6,7 @@ import { useScale } from '../../context/ScaleContext';
 import { soundService } from '../../utils/audio';
 import { formatTime } from '../../utils/coffeeMath';
 import { LivePourCurveChart } from './LivePourCurveChart';
+import { AnimatedPourOverTimer } from './AnimatedPourOverTimer';
 import {
   Play,
   Pause,
@@ -57,6 +58,7 @@ export const LiveTimer: React.FC<LiveTimerProps> = ({
   const [currentStageIdx, setCurrentStageIdx] = useState<number>(0);
   const [isMuted, setIsMuted] = useState<boolean>(soundService.getIsMuted());
   const [showChart, setShowChart] = useState<boolean>(true);
+  const [timerViewMode, setTimerViewMode] = useState<'animated' | 'compact'>('animated');
 
   // Time-series curve recording
   const [curveData, setCurveData] = useState<WeightDataPoint[]>([]);
@@ -317,58 +319,108 @@ export const LiveTimer: React.FC<LiveTimerProps> = ({
             >
               {isMuted ? <VolumeX className="w-4 h-4 text-stone-500" /> : <Volume2 className="w-4 h-4 text-amber-400" />}
             </button>
-          </div>
-        </div>
 
-        {/* Digital Time & Scale Weight Dual Display */}
-        <div className="my-3 grid grid-cols-1 sm:grid-cols-2 gap-3 items-center">
-          {/* Elapsed Time */}
-          <div className="p-3 bg-stone-950/50 rounded-2xl border border-stone-800/60">
-            <div className="text-[10px] uppercase tracking-widest text-stone-400 font-medium">
-              {t.brew.elapsedTime}
-            </div>
-            <div className="text-5xl sm:text-6xl font-extrabold font-mono tracking-tight text-stone-100 my-1 drop-shadow-md">
-              {formatTime(totalSeconds)}
-            </div>
-            <div className="text-[11px] text-stone-500 font-mono">
-              Stage: {stageElapsed}s / {stageDuration}s
-            </div>
-          </div>
-
-          {/* Scale Live Weight & Flow Rate */}
-          <div className="p-3 bg-stone-950/50 rounded-2xl border border-stone-800/60">
-            <div className="text-[10px] uppercase tracking-widest text-stone-400 font-medium flex items-center justify-center gap-1.5">
-              <span>{isScaleConnected ? t.scale.liveWeight : 'Target Water'}</span>
-              {isScaleConnected && (
-                <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-ping" />
-              )}
-            </div>
-            <div className="text-5xl sm:text-6xl font-extrabold font-mono tracking-tight text-amber-300 my-1 drop-shadow-md">
-              {displayWeight.toFixed(1)}
-              <span className="text-lg text-stone-400 font-normal ml-1">g</span>
-            </div>
-
-            {/* Live Flow Rate with Target Guidance */}
-            <div className="text-[11px] font-mono flex items-center justify-center gap-1.5">
-              <span className="text-stone-400">Flow:</span>
-              <span
-                className={`font-bold ${
-                  telemetry.flowRate === 0
-                    ? 'text-stone-500'
-                    : isFlowOnTarget
-                    ? 'text-emerald-400'
-                    : isFlowTooFast
-                    ? 'text-amber-400'
-                    : 'text-cyan-400'
+            {/* View Mode Toggle: Animated Dripper vs Compact */}
+            <div className="flex items-center bg-stone-900/80 p-0.5 rounded-xl border border-stone-800 text-xs shadow-sm">
+              <button
+                type="button"
+                onClick={() => setTimerViewMode('animated')}
+                className={`px-2 py-1 rounded-lg text-[11px] font-medium transition ${
+                  timerViewMode === 'animated'
+                    ? 'bg-amber-600/30 text-amber-300 border border-amber-500/30 shadow-sm'
+                    : 'text-stone-400 hover:text-stone-200'
                 }`}
+                title={language === 'zh-TW' ? '動畫手沖計時器' : 'Animated Dripper Timer'}
               >
-                {telemetry.flowRate.toFixed(1)} g/s
-              </span>
-              <span className="text-stone-600">|</span>
-              <span className="text-stone-400">Target: ~{expectedStageFlowRate} g/s</span>
+                ☕ {language === 'zh-TW' ? '動畫' : 'Animation'}
+              </button>
+              <button
+                type="button"
+                onClick={() => setTimerViewMode('compact')}
+                className={`px-2 py-1 rounded-lg text-[11px] font-medium transition ${
+                  timerViewMode === 'compact'
+                    ? 'bg-amber-600/30 text-amber-300 border border-amber-500/30 shadow-sm'
+                    : 'text-stone-400 hover:text-stone-200'
+                }`}
+                title={language === 'zh-TW' ? '數字卡片模式' : 'Compact Cards'}
+              >
+                📊 {language === 'zh-TW' ? '簡約' : 'Compact'}
+              </button>
             </div>
           </div>
         </div>
+
+        {/* Dynamic Timer View: Animated Pour-Over Dripper or Compact Cards */}
+        {timerViewMode === 'animated' ? (
+          <div className="my-3">
+            <AnimatedPourOverTimer
+              totalSeconds={totalSeconds}
+              stageElapsed={stageElapsed}
+              stageDuration={stageDuration}
+              stageRemaining={stageRemaining}
+              currentStageName={currentStage?.name}
+              currentStageIdx={currentStageIdx}
+              totalStages={stages.length}
+              isRunning={isRunning}
+              currentWeight={displayWeight}
+              totalTargetWater={totalTargetWater}
+              flowRate={telemetry.flowRate}
+              expectedStageFlowRate={expectedStageFlowRate}
+              isScaleConnected={isScaleConnected}
+              formatTime={formatTime}
+            />
+          </div>
+        ) : (
+          /* Digital Time & Scale Weight Dual Display */
+          <div className="my-3 grid grid-cols-1 sm:grid-cols-2 gap-3 items-center">
+            {/* Elapsed Time */}
+            <div className="p-3 bg-stone-950/50 rounded-2xl border border-stone-800/60">
+              <div className="text-[10px] uppercase tracking-widest text-stone-400 font-medium">
+                {t.brew.elapsedTime}
+              </div>
+              <div className="text-5xl sm:text-6xl font-extrabold font-mono tracking-tight text-stone-100 my-1 drop-shadow-md">
+                {formatTime(totalSeconds)}
+              </div>
+              <div className="text-[11px] text-stone-500 font-mono">
+                Stage: {stageElapsed}s / {stageDuration}s
+              </div>
+            </div>
+
+            {/* Scale Live Weight & Flow Rate */}
+            <div className="p-3 bg-stone-950/50 rounded-2xl border border-stone-800/60">
+              <div className="text-[10px] uppercase tracking-widest text-stone-400 font-medium flex items-center justify-center gap-1.5">
+                <span>{isScaleConnected ? t.scale.liveWeight : 'Target Water'}</span>
+                {isScaleConnected && (
+                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-ping" />
+                )}
+              </div>
+              <div className="text-5xl sm:text-6xl font-extrabold font-mono tracking-tight text-amber-300 my-1 drop-shadow-md">
+                {displayWeight.toFixed(1)}
+                <span className="text-lg text-stone-400 font-normal ml-1">g</span>
+              </div>
+
+              {/* Live Flow Rate with Target Guidance */}
+              <div className="text-[11px] font-mono flex items-center justify-center gap-1.5">
+                <span className="text-stone-400">Flow:</span>
+                <span
+                  className={`font-bold ${
+                    telemetry.flowRate === 0
+                      ? 'text-stone-500'
+                      : isFlowOnTarget
+                      ? 'text-emerald-400'
+                      : isFlowTooFast
+                      ? 'text-amber-400'
+                      : 'text-cyan-400'
+                  }`}
+                >
+                  {telemetry.flowRate.toFixed(1)} g/s
+                </span>
+                <span className="text-stone-600">|</span>
+                <span className="text-stone-400">Target: ~{expectedStageFlowRate} g/s</span>
+              </div>
+            </div>
+          </div>
+        )}
 
         {/* Current Stage Highlight Box */}
         <div className="mt-3 p-4 rounded-2xl bg-stone-900/90 border border-stone-800/90 max-w-md mx-auto">
