@@ -155,10 +155,6 @@ export class AcaiaScaleDriver {
       ACAIA_BM71_SERVICE_UUID,
       ACAIA_CSR_SERVICE_UUID,
       ACAIA_OLD_CSR_SERVICE_UUID,
-      '00001820-0000-1000-8000-00805f9b34fb',
-      '0000ffe0-0000-1000-8000-00805f9b34fb',
-      '1820',
-      'ffe0',
     ];
 
     const requestOptions: RequestDeviceOptions = options?.scanAll
@@ -216,8 +212,7 @@ export class AcaiaScaleDriver {
             service = await server.getPrimaryService(ACAIA_OLD_CSR_SERVICE_UUID);
             this.isBM71 = false;
           } catch {
-            service = await server.getPrimaryService('00001820-0000-1000-8000-00805f9b34fb');
-            this.isBM71 = false;
+            service = null;
           }
         }
       }
