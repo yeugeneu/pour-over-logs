@@ -1,15 +1,12 @@
 import React from 'react';
 import { useCoffee } from '../../context/CoffeeContext';
-import { useTheme } from '../../context/ThemeContext';
 import { useI18n } from '../../i18n';
-import { Coffee, Flame, Plus, Sparkles, TrendingUp, History, Database, Layers, Palette } from 'lucide-react';
-import { SyncStatusBadge } from '../auth/SyncStatusBadge';
-import { ScaleStatusWidget } from '../scale/ScaleStatusWidget';
+import { Coffee, Flame, Plus, Sparkles, TrendingUp, History, Database, Layers } from 'lucide-react';
+import { SettingsDropdown } from './SettingsDropdown';
 
 export const Navbar: React.FC = () => {
   const { beans, logs, activeTab, setActiveTab, openBrewModal, openBeanModal } = useCoffee();
-  const { openThemeModal, currentThemeInfo } = useTheme();
-  const { language, setLanguage, t } = useI18n();
+  const { t } = useI18n();
 
   const totalBeans = beans.length;
   const totalBrews = logs.length;
@@ -65,32 +62,10 @@ export const Navbar: React.FC = () => {
             </div>
           </div>
 
-          {/* Action Buttons & Language Switch */}
+          {/* Action Buttons & Consolidated Settings Menu */}
           <div className="flex items-center space-x-1.5 sm:space-x-2.5 shrink-0">
-            {/* Acaia Bluetooth Scale Widget */}
-            <ScaleStatusWidget />
-
-            {/* Cloud Sync / Auth Status Badge */}
-            <SyncStatusBadge />
-
-            {/* Theme Switcher Button */}
-            <button
-              onClick={openThemeModal}
-              className="shrink-0 p-1.5 sm:px-2 sm:py-1.5 text-xs font-semibold rounded-xl bg-stone-900 hover:bg-stone-800 text-stone-300 hover:text-stone-100 border border-stone-800 transition flex items-center gap-1 shadow-sm"
-              title={language === 'zh-TW' ? `視覺風格主題 (${currentThemeInfo.nameZh})` : `Theme: ${currentThemeInfo.nameEn}`}
-            >
-              <Palette className="w-3.5 h-3.5 text-amber-400" />
-              <span className="hidden sm:inline text-[11px]">{currentThemeInfo.emoji}</span>
-            </button>
-
-            {/* Language Switch Button */}
-            <button
-              onClick={() => setLanguage(language === 'zh-TW' ? 'en' : 'zh-TW')}
-              className="shrink-0 whitespace-nowrap min-w-[36px] sm:min-w-[40px] px-2 py-1.5 text-xs font-semibold rounded-xl bg-stone-900 hover:bg-stone-800 text-stone-300 hover:text-stone-100 border border-stone-800 transition text-center shadow-sm"
-              title="Switch Language"
-            >
-              {language === 'zh-TW' ? 'EN' : '繁中'}
-            </button>
+            {/* Consolidated Settings Menu (Language, Themes, Bluetooth Scale, Cloud Sync) */}
+            <SettingsDropdown />
 
             {/* Add Bean Button (Desktop / Tablet) */}
             <button

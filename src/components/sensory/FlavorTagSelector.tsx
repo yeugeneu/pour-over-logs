@@ -28,8 +28,7 @@ export const FlavorTagSelector: React.FC<FlavorTagSelectorProps> = ({
     }
   };
 
-  const handleAddCustom = (e: React.FormEvent) => {
-    e.preventDefault();
+  const handleAddCustom = () => {
     const trimmed = customInput.trim();
     if (trimmed && !selectedTags.includes(trimmed)) {
       if (selectedTags.length < maxTags) {
@@ -68,23 +67,30 @@ export const FlavorTagSelector: React.FC<FlavorTagSelectorProps> = ({
       </div>
 
       {/* Custom Tag Input */}
-      <form onSubmit={handleAddCustom} className="flex gap-2">
+      <div className="flex gap-2">
         <input
           type="text"
           value={customInput}
           onChange={(e) => setCustomInput(e.target.value)}
+          onKeyDown={(e) => {
+            if (e.key === 'Enter') {
+              e.preventDefault();
+              handleAddCustom();
+            }
+          }}
           placeholder={t.sensory.searchTagPlaceholder}
           className="flex-1 bg-stone-900 text-stone-100 placeholder-stone-500 text-xs px-3 py-2 rounded-lg border border-stone-800 focus:outline-none focus:border-amber-500 focus:ring-1 focus:ring-amber-500"
         />
         <button
-          type="submit"
+          type="button"
+          onClick={handleAddCustom}
           disabled={!customInput.trim() || selectedTags.length >= maxTags}
           className="px-3 py-2 bg-stone-800 hover:bg-stone-700 disabled:opacity-50 text-stone-200 text-xs font-medium rounded-lg border border-stone-700 transition flex items-center gap-1"
         >
           <Plus className="w-3.5 h-3.5" />
           <span>{language === 'zh-TW' ? '加入' : 'Add'}</span>
         </button>
-      </form>
+      </div>
 
       {/* Flavor Category Selector Tabs */}
       <div className="flex gap-1 overflow-x-auto pb-1 no-scrollbar">

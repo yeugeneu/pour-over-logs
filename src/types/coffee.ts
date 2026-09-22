@@ -2,6 +2,7 @@ export type ProcessMethod =
   | 'Washed'
   | 'Natural'
   | 'Honey'
+  | 'Raisin Honey Process'
   | 'Anaerobic'
   | 'Thermal Shock'
   | 'Carbonic Maceration'

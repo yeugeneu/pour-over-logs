@@ -41,8 +41,23 @@ export interface Translations {
     farm: string;
     varietal: string;
     process: string;
+    processWashed: string;
+    processNatural: string;
+    processHoney: string;
+    processRaisinHoney: string;
+    processAnaerobic: string;
+    processThermalShock: string;
+    processCarbonicMaceration: string;
+    processWetHulled: string;
+    processExperimental: string;
+    processOther: string;
     roaster: string;
     roastLevel: string;
+    roastLight: string;
+    roastLightMedium: string;
+    roastMedium: string;
+    roastMediumDark: string;
+    roastDark: string;
     tastingNotes: string;
     goldenRecipe: string;
     noGoldenRecipe: string;
@@ -223,5 +238,24 @@ export interface Translations {
     tipPowerCycleDesc: string;
     tipBluefyTitle: string;
     tipBluefyDesc: string;
+  };
+  settings: {
+    title: string;
+    menuTitle: string;
+    language: string;
+    theme: string;
+    scale: string;
+    cloudSync: string;
+    currentTheme: string;
+    scaleConnected: string;
+    scaleDisconnected: string;
+    scaleConnecting: string;
+    manageScale: string;
+    manageAccount: string;
+    changeTheme: string;
+    localMode: string;
+    synced: string;
+    syncing: string;
+    offline: string;
   };
 }

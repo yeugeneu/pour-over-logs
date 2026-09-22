@@ -161,6 +161,7 @@ export const BeanModal: React.FC = () => {
     'Washed',
     'Natural',
     'Honey',
+    'Raisin Honey Process',
     'Anaerobic',
     'Thermal Shock',
     'Carbonic Maceration',
@@ -176,6 +177,27 @@ export const BeanModal: React.FC = () => {
     'Medium-Dark',
     'Dark',
   ];
+
+  const processLabels: Record<ProcessMethod, string> = {
+    Washed: t.beans.processWashed,
+    Natural: t.beans.processNatural,
+    Honey: t.beans.processHoney,
+    'Raisin Honey Process': t.beans.processRaisinHoney,
+    Anaerobic: t.beans.processAnaerobic,
+    'Thermal Shock': t.beans.processThermalShock,
+    'Carbonic Maceration': t.beans.processCarbonicMaceration,
+    'Wet Hulled': t.beans.processWetHulled,
+    Experimental: t.beans.processExperimental,
+    Other: t.beans.processOther,
+  };
+
+  const roastLabels: Record<RoastLevel, string> = {
+    Light: t.beans.roastLight,
+    'Light-Medium': t.beans.roastLightMedium,
+    Medium: t.beans.roastMedium,
+    'Medium-Dark': t.beans.roastMediumDark,
+    Dark: t.beans.roastDark,
+  };
 
   return (
     <>
@@ -346,7 +368,7 @@ export const BeanModal: React.FC = () => {
                 >
                   {processOptions.map((opt) => (
                     <option key={opt} value={opt}>
-                      {opt}
+                      {processLabels[opt]}
                     </option>
                   ))}
                 </select>
@@ -363,7 +385,7 @@ export const BeanModal: React.FC = () => {
                 >
                   {roastOptions.map((opt) => (
                     <option key={opt} value={opt}>
-                      {opt}
+                      {roastLabels[opt]}
                     </option>
                   ))}
                 </select>
