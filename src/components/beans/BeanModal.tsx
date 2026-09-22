@@ -83,6 +83,16 @@ export const BeanModal: React.FC = () => {
   const daysOffRoast = calculateDaysOffRoast(roastDate);
   const restInfo = getRestingStageInfo(daysOffRoast, roastLevel);
 
+  const handleCloseWithoutSaving = () => {
+    const message = language === 'zh-TW'
+      ? '目前的咖啡豆資料尚未儲存，確定要不儲存並關閉嗎？'
+      : 'This bean has not been saved. Close without saving?';
+
+    if (window.confirm(message)) {
+      closeBeanModal();
+    }
+  };
+
   const handleScannerApply = (data: ExtractedBeanMetadata) => {
     if (data.name) setName(data.name);
     if (data.roaster) setRoaster(data.roaster);
@@ -233,7 +243,7 @@ export const BeanModal: React.FC = () => {
               </button>
 
               <button
-                onClick={closeBeanModal}
+                onClick={handleCloseWithoutSaving}
                 className="p-2 rounded-xl hover:bg-stone-800 text-stone-400 hover:text-stone-200 transition"
               >
                 <X className="w-5 h-5" />
@@ -539,7 +549,7 @@ export const BeanModal: React.FC = () => {
             <div className="pt-3 border-t border-stone-800 flex justify-end space-x-2">
               <button
                 type="button"
-                onClick={closeBeanModal}
+                onClick={handleCloseWithoutSaving}
                 className="px-4 py-2 rounded-xl bg-stone-800 hover:bg-stone-700 text-stone-300 text-xs font-medium transition"
               >
                 {language === 'zh-TW' ? '取消' : 'Cancel'}

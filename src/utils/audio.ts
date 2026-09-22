@@ -82,6 +82,35 @@ class SoundService {
     }
   }
 
+  public playTargetReached(): void {
+    if (this.isMuted) return;
+    try {
+      const ctx = this.getContext();
+      if (!ctx) return;
+
+      // Two clear notes signal that the current pour target has been reached.
+      const now = ctx.currentTime;
+      [880, 659.25].forEach((freq, idx) => {
+        const start = now + idx * 0.16;
+        const osc = ctx.createOscillator();
+        const gain = ctx.createGain();
+
+        osc.type = 'sine';
+        osc.frequency.setValueAtTime(freq, start);
+        gain.gain.setValueAtTime(0, start);
+        gain.gain.linearRampToValueAtTime(0.2, start + 0.02);
+        gain.gain.exponentialRampToValueAtTime(0.001, start + 0.32);
+
+        osc.connect(gain);
+        gain.connect(ctx.destination);
+        osc.start(start);
+        osc.stop(start + 0.36);
+      });
+    } catch {
+      // ignore
+    }
+  }
+
   public playFinish(): void {
     if (this.isMuted) return;
     try {
@@ -108,6 +137,38 @@ class SoundService {
 
         osc.start(now + idx * 0.1);
         osc.stop(now + idx * 0.1 + 0.65);
+      });
+    } catch {
+      // ignore
+    }
+  }
+
+  public playBrewComplete(): void {
+    if (this.isMuted) return;
+    try {
+      const ctx = this.getContext();
+      if (!ctx) return;
+
+      // Distinct completion cadence: rising fifth followed by a warm resolve.
+      const now = ctx.currentTime;
+      const notes = [392, 523.25, 659.25, 783.99];
+
+      notes.forEach((freq, idx) => {
+        const start = now + idx * 0.14;
+        const osc = ctx.createOscillator();
+        const gain = ctx.createGain();
+
+        osc.type = idx === notes.length - 1 ? 'triangle' : 'sine';
+        osc.frequency.setValueAtTime(freq, start);
+        gain.gain.setValueAtTime(0, start);
+        gain.gain.linearRampToValueAtTime(0.18, start + 0.025);
+        gain.gain.exponentialRampToValueAtTime(0.001, start + 0.5);
+
+        osc.connect(gain);
+        gain.connect(ctx.destination);
+
+        osc.start(start);
+        osc.stop(start + 0.55);
       });
     } catch {
       // ignore

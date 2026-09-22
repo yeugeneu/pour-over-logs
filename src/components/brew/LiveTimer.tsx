@@ -55,7 +55,9 @@ export const LiveTimer: React.FC<LiveTimerProps> = ({
 
   const [isRunning, setIsRunning] = useState<boolean>(false);
   const [totalSeconds, setTotalSeconds] = useState<number>(0);
+  const [countdown, setCountdown] = useState<number | null>(null);
   const [currentStageIdx, setCurrentStageIdx] = useState<number>(0);
+  const [isTargetReached, setIsTargetReached] = useState(false);
   const [isMuted, setIsMuted] = useState<boolean>(soundService.getIsMuted());
   const [showChart, setShowChart] = useState<boolean>(true);
   const [timerViewMode, setTimerViewMode] = useState<'animated' | 'compact'>('animated');
@@ -68,10 +70,32 @@ export const LiveTimer: React.FC<LiveTimerProps> = ({
   const [drawdownTimeSeconds, setDrawdownTimeSeconds] = useState<number | null>(null);
 
   const timerRef = useRef<number | null>(null);
+  const targetReachedStageRef = useRef<number | null>(null);
   const telemetryRef = useRef(telemetry);
   telemetryRef.current = telemetry;
 
   const currentStage = stages[currentStageIdx] || stages[stages.length - 1];
+
+  useEffect(() => {
+    targetReachedStageRef.current = null;
+    setIsTargetReached(false);
+  }, [currentStageIdx]);
+
+  useEffect(() => {
+    if (
+      !isScaleConnected ||
+      !isRunning ||
+      !currentStage ||
+      targetReachedStageRef.current === currentStageIdx ||
+      telemetry.weight < currentStage.targetWaterGrams
+    ) {
+      return;
+    }
+
+    targetReachedStageRef.current = currentStageIdx;
+    setIsTargetReached(true);
+    soundService.playTargetReached();
+  }, [currentStage, currentStageIdx, isRunning, isScaleConnected, telemetry.weight]);
 
   // Calculate stage elapsed and remaining time
   const stageStartTime = currentStage?.startTimeSeconds || 0;
@@ -111,6 +135,7 @@ export const LiveTimer: React.FC<LiveTimerProps> = ({
   useEffect(() => {
     if (
       !isRunning &&
+      countdown === null &&
       totalSeconds === 0 &&
       isScaleConnected &&
       preferences.autoStartOnFirstDrop &&
@@ -125,6 +150,7 @@ export const LiveTimer: React.FC<LiveTimerProps> = ({
     }
   }, [
     isRunning,
+    countdown,
     totalSeconds,
     isScaleConnected,
     preferences.autoStartOnFirstDrop,
@@ -134,6 +160,25 @@ export const LiveTimer: React.FC<LiveTimerProps> = ({
     tare,
     scaleStartTimer,
   ]);
+
+  // Three-second countdown before the first brew timer starts.
+  useEffect(() => {
+    if (countdown === null) return;
+
+    if (countdown > 0) {
+      soundService.playBeep(countdown === 1 ? 880 : 660, 0.12);
+      const timeout = window.setTimeout(() => setCountdown(countdown - 1), 1000);
+      return () => window.clearTimeout(timeout);
+    }
+
+    soundService.playBeep(1046.5, 0.3, 'triangle');
+    setIsRunning(true);
+    if (preferences.autoTareOnBrewStart && isScaleConnected) {
+      tare();
+    }
+    scaleStartTimer();
+    setCountdown(null);
+  }, [countdown, isScaleConnected, preferences.autoTareOnBrewStart, scaleStartTimer, tare]);
 
   // Main Timer Loop & Auto Stage Transitions
   useEffect(() => {
@@ -203,10 +248,11 @@ export const LiveTimer: React.FC<LiveTimerProps> = ({
 
   const toggleTimer = () => {
     if (!isRunning) {
-      soundService.playBeep(880, 0.1);
-      if (totalSeconds === 0 && preferences.autoTareOnBrewStart && isScaleConnected) {
-        tare();
+      if (totalSeconds === 0) {
+        setCountdown(3);
+        return;
       }
+      soundService.playBeep(880, 0.1);
       scaleStartTimer();
     } else {
       scalePauseTimer();
@@ -216,6 +262,7 @@ export const LiveTimer: React.FC<LiveTimerProps> = ({
 
   const resetTimer = () => {
     setIsRunning(false);
+    setCountdown(null);
     setTotalSeconds(0);
     setCurrentStageIdx(0);
     setCurveData([]);
@@ -233,7 +280,7 @@ export const LiveTimer: React.FC<LiveTimerProps> = ({
 
   const handleFinish = () => {
     setIsRunning(false);
-    soundService.playFinish();
+    soundService.playBrewComplete();
     scalePauseTimer();
 
     // Calculate actual drawdown if in drawdown phase
@@ -350,6 +397,104 @@ export const LiveTimer: React.FC<LiveTimerProps> = ({
           </div>
         </div>
 
+        {/* Current Stage Pour Guidance */}
+        {currentStage && (
+          <div className="mt-3 p-4 sm:p-5 rounded-2xl bg-amber-500/10 border border-amber-500/30 shadow-lg shadow-amber-950/10">
+            <div className="grid grid-cols-1 sm:grid-cols-[1fr_auto] gap-4 items-center">
+              <div className="min-w-0">
+                <div className="text-xs uppercase tracking-widest text-amber-300/80 font-bold">
+                  {language === 'zh-TW'
+                    ? `目前階段 ${currentStageIdx + 1} / ${stages.length}`
+                    : `Current Stage ${currentStageIdx + 1} of ${stages.length}`}
+                </div>
+                <div className="text-lg sm:text-xl font-extrabold text-stone-100 leading-tight mt-1">
+                  {currentStage.name}
+                </div>
+                {currentStage.description && (
+                  <p className="text-sm text-stone-300 mt-2 leading-relaxed">
+                    {currentStage.description}
+                  </p>
+                )}
+              </div>
+              <div className="flex items-center gap-2 sm:pl-5 sm:border-l sm:border-amber-500/30 shrink-0">
+                <Droplets className="w-6 h-6 text-amber-300" />
+                <div>
+                  <div className="text-[11px] uppercase tracking-widest text-amber-200/70 font-bold">
+                    {language === 'zh-TW' ? '本段注水' : 'Stage Pour'}
+                  </div>
+                  <div className="text-3xl sm:text-4xl font-extrabold font-mono leading-none text-amber-300 mt-1">
+                    +{currentStage.pourWaterGrams}g
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div className="grid grid-cols-2 gap-2 mt-4 pt-3 border-t border-amber-500/20 text-sm">
+              <div className="text-stone-300">
+                {language === 'zh-TW' ? '累計目標' : 'Cumulative target'}{' '}
+                <strong className="text-stone-100 font-mono">{currentStage.targetWaterGrams}g</strong>
+              </div>
+              <div className="text-right text-stone-300">
+                {language === 'zh-TW' ? '建議流速' : 'Target flow'}{' '}
+                <strong className="text-cyan-300 font-mono">~{expectedStageFlowRate} g/s</strong>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {currentStageIdx < stages.length - 1 && stages[currentStageIdx + 1] && (
+          <div className="mt-2 rounded-xl border border-stone-800/80 bg-stone-900/60 px-3 py-2.5 text-left">
+            <div className="text-[10px] font-bold uppercase tracking-widest text-stone-500">
+              {language === 'zh-TW' ? '下一階段指示' : 'Next Stage'}
+            </div>
+            <div className="mt-0.5 flex items-baseline justify-between gap-3">
+              <span className="text-sm font-semibold text-stone-300">
+                {stages[currentStageIdx + 1].name}
+              </span>
+              <span className="shrink-0 font-mono text-xs text-stone-400">
+                +{stages[currentStageIdx + 1].pourWaterGrams}g / {stages[currentStageIdx + 1].targetWaterGrams}g
+              </span>
+            </div>
+            {stages[currentStageIdx + 1].description && (
+              <p className="mt-1 text-xs leading-relaxed text-stone-500">
+                {stages[currentStageIdx + 1].description}
+              </p>
+            )}
+          </div>
+        )}
+
+        {isScaleConnected && isTargetReached && (
+          <div
+            role="status"
+            className="mt-3 flex items-center gap-3 rounded-2xl border border-emerald-400/60 bg-emerald-500/15 px-4 py-3 text-emerald-100 animate-pulse"
+          >
+            <CheckCircle className="w-6 h-6 shrink-0 text-emerald-300" />
+            <div>
+              <div className="text-base font-extrabold">
+                {language === 'zh-TW' ? '已達本階段目標' : 'Stage target reached'}
+              </div>
+              <div className="text-xs text-emerald-200/80 mt-0.5">
+                {language === 'zh-TW' ? '請暫停注水，等待下一階段' : 'Pause pouring and wait for the next stage'}
+              </div>
+            </div>
+          </div>
+        )}
+
+        {isScaleConnected && preferences.autoStartOnFirstDrop && !isRunning && countdown === null && totalSeconds === 0 && (
+          <div className="mt-3 flex items-center gap-3 rounded-2xl border border-emerald-400/40 bg-emerald-500/10 px-4 py-3 text-left animate-pulse">
+            <Bluetooth className="w-5 h-5 shrink-0 text-emerald-300" />
+            <div>
+              <div className="text-sm font-bold text-emerald-200">
+                {language === 'zh-TW' ? '電子秤已連線，可直接開始注水' : 'Scale connected - you can pour directly'}
+              </div>
+              <div className="text-xs text-emerald-200/75 mt-0.5">
+                {language === 'zh-TW'
+                  ? '偵測到第一滴水後，計時器會自動開始，無需按開始計時。'
+                  : 'The timer will start automatically when the first drop is detected.'}
+              </div>
+            </div>
+          </div>
+        )}
+
         {/* Dynamic Timer View: Animated Pour-Over Dripper or Compact Cards */}
         {timerViewMode === 'animated' ? (
           <div className="my-3">
@@ -422,58 +567,6 @@ export const LiveTimer: React.FC<LiveTimerProps> = ({
           </div>
         )}
 
-        {/* Current Stage Highlight Box */}
-        <div className="mt-3 p-4 rounded-2xl bg-stone-900/90 border border-stone-800/90 max-w-md mx-auto">
-          <div className="flex items-center justify-between text-xs text-stone-400 mb-2">
-            <span className="font-semibold text-amber-400 uppercase tracking-wide">
-              {language === 'zh-TW'
-                ? `階段 ${currentStageIdx + 1} / ${stages.length}`
-                : `Stage ${currentStageIdx + 1} of ${stages.length}`}
-            </span>
-            <span className="font-mono bg-stone-800 px-2 py-0.5 rounded text-stone-300">
-              {language === 'zh-TW' ? `剩餘 ${stageRemaining}s` : `${stageRemaining}s left`}
-            </span>
-          </div>
-
-          <div className="text-base sm:text-lg font-bold text-stone-100 flex items-center justify-center gap-2">
-            <span>{currentStage?.name}</span>
-          </div>
-
-          {currentStage?.description && (
-            <p className="text-xs text-stone-400 mt-1.5 leading-relaxed">
-              {currentStage.description}
-            </p>
-          )}
-
-          {/* Water Target & Flow Rate metrics */}
-          <div className="grid grid-cols-3 gap-2 mt-3 pt-3 border-t border-stone-800/80 text-center">
-            <div className="p-2 rounded-xl bg-stone-950/60 border border-stone-800/60">
-              <div className="text-[10px] text-stone-400 uppercase">
-                {language === 'zh-TW' ? '本段注水' : 'Stage Pour'}
-              </div>
-              <div className="text-sm font-bold font-mono text-amber-300">
-                +{currentStage?.pourWaterGrams}g
-              </div>
-            </div>
-            <div className="p-2 rounded-xl bg-stone-950/60 border border-stone-800/60">
-              <div className="text-[10px] text-stone-400 uppercase">
-                {language === 'zh-TW' ? '累計目標' : 'Cumulative'}
-              </div>
-              <div className="text-sm font-bold font-mono text-stone-100">
-                {currentStage?.targetWaterGrams}g
-              </div>
-            </div>
-            <div className="p-2 rounded-xl bg-stone-950/60 border border-stone-800/60">
-              <div className="text-[10px] text-stone-400 uppercase">
-                {language === 'zh-TW' ? '建議流速' : 'Flow Rate'}
-              </div>
-              <div className="text-sm font-bold font-mono text-cyan-300">
-                ~{expectedStageFlowRate} g/s
-              </div>
-            </div>
-          </div>
-        </div>
-
         {/* Total Water Progress Bar */}
         <div className="mt-4 max-w-md mx-auto">
           <div className="flex justify-between text-xs text-stone-400 mb-1">
@@ -490,6 +583,17 @@ export const LiveTimer: React.FC<LiveTimerProps> = ({
           </div>
         </div>
 
+        {countdown !== null && (
+          <div className="mt-4 flex items-center justify-center gap-3 rounded-2xl border border-amber-500/30 bg-amber-500/10 px-4 py-3 text-amber-200">
+            <span className="text-sm font-semibold">
+              {language === 'zh-TW' ? '準備開始沖煮' : 'Preparing to brew'}
+            </span>
+            <span className="text-4xl font-extrabold font-mono text-amber-300 tabular-nums">
+              {countdown}
+            </span>
+          </div>
+        )}
+
         {/* Primary Timer Controls */}
         <div className="flex items-center justify-center gap-3 sm:gap-4 mt-6">
           <button
@@ -504,13 +608,20 @@ export const LiveTimer: React.FC<LiveTimerProps> = ({
           <button
             type="button"
             onClick={toggleTimer}
+            disabled={countdown !== null}
             className={`flex items-center justify-center space-x-2 px-8 py-3.5 rounded-2xl font-bold text-base transition shadow-lg transform active:scale-95 ${
-              isRunning
+              countdown !== null
+                ? 'bg-stone-700 text-stone-400 cursor-not-allowed'
+                : isRunning
                 ? 'bg-rose-600 hover:bg-rose-500 text-white shadow-rose-900/30'
                 : 'bg-gradient-to-r from-amber-600 to-amber-500 hover:from-amber-500 hover:to-amber-400 text-white shadow-amber-900/40'
             }`}
           >
-            {isRunning ? (
+            {countdown !== null ? (
+              <>
+                <span>{language === 'zh-TW' ? '倒數中' : 'Countdown'}</span>
+              </>
+            ) : isRunning ? (
               <>
                 <Pause className="w-5 h-5" />
                 <span>{t.brew.pauseTimer}</span>

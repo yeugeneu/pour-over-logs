@@ -150,7 +150,7 @@ export const AnimatedPourOverTimer: React.FC<AnimatedPourOverTimerProps> = ({
       </div>
 
       {/* SVG Animated Dripper Canvas */}
-      <div className="relative flex justify-center items-center py-2">
+      <div className="hidden">
         <svg
           viewBox="0 0 360 270"
           className="w-full max-w-[340px] h-auto select-none overflow-visible"

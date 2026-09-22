@@ -13,6 +13,11 @@ import { FlavorTagSelector } from '../sensory/FlavorTagSelector';
 import { LiveTimer } from './LiveTimer';
 import { X, Coffee, Sliders, ChevronRight, ChevronLeft, Sparkles, Check, Bookmark, Plus, Trash2, Lock, Unlock, Bluetooth } from 'lucide-react';
 
+const getScaledStageName = (name: string, targetWaterGrams: number, pourWaterGrams: number) =>
+  name
+    .replace(/\(至 \d+g\)/, `(至 ${targetWaterGrams}g)`)
+    .replace(/\(\d+g\)/, `(${pourWaterGrams}g)`);
+
 export const BrewSessionModal: React.FC = () => {
   const {
     beans,
@@ -38,7 +43,7 @@ export const BrewSessionModal: React.FC = () => {
   // Parameters
   const [dripper, setDripper] = useState<string>('Hario V60 01');
   const [filterPaper, setFilterPaper] = useState<string>('Cafec Abaca');
-  const [grinder, setGrinder] = useState<string>('Comandante C40 MK4');
+  const [grinder, setGrinder] = useState<string>('Fellow Ode Gen 1');
   const [grindSetting, setGrindSetting] = useState<string>('23 clicks');
   const [doseGrams, setDoseGrams] = useState<number | ''>(15);
   const [waterGrams, setWaterGrams] = useState<number | ''>(225);
@@ -91,7 +96,7 @@ export const BrewSessionModal: React.FC = () => {
         const pourWater = Math.round((newTotalWater * st.pourWaterPercent) / 100);
         return {
           id: `st-${idx + 1}`,
-          name: st.name,
+          name: getScaledStageName(st.name, targetWater, pourWater),
           targetWaterGrams: targetWater,
           pourWaterGrams: pourWater,
           startTimeSeconds: st.startTimeSeconds,
@@ -198,7 +203,7 @@ export const BrewSessionModal: React.FC = () => {
       const pourWater = Math.round((currentWater * st.pourWaterPercent) / 100);
       return {
         id: `st-${idx + 1}`,
-        name: st.name,
+        name: getScaledStageName(st.name, targetWater, pourWater),
         targetWaterGrams: targetWater,
         pourWaterGrams: pourWater,
         startTimeSeconds: st.startTimeSeconds,
@@ -252,6 +257,16 @@ export const BrewSessionModal: React.FC = () => {
   const ratio = targetRatio !== '' ? Number(targetRatio) : calculateRatio(parsedDose, parsedWater);
 
   const daysOffRoast = currentBean ? calculateDaysOffRoast(currentBean.roastDate) : 0;
+
+  const handleCloseWithoutSaving = () => {
+    const message = language === 'zh-TW'
+      ? '目前的沖煮資料尚未儲存，確定要不儲存並關閉嗎？'
+      : 'This brew has not been saved. Close without saving?';
+
+    if (window.confirm(message)) {
+      closeBrewModal();
+    }
+  };
 
   const tdsNum = parseFloat(tdsInput);
   const eyPercent = !isNaN(tdsNum) && tdsNum > 0 && parsedDose > 0
@@ -427,7 +442,7 @@ export const BrewSessionModal: React.FC = () => {
           </div>
 
           <button
-            onClick={closeBrewModal}
+            onClick={handleCloseWithoutSaving}
             className="p-2 rounded-xl hover:bg-stone-800 text-stone-400 hover:text-stone-200 transition"
           >
             <X className="w-5 h-5" />
