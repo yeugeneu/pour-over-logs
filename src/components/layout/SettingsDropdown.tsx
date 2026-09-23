@@ -123,9 +123,9 @@ export const SettingsDropdown: React.FC = () => {
 
       {/* Dropdown Menu Popover */}
       {isOpen && (
-        <div className="absolute right-0 top-full mt-2 w-80 sm:w-92 z-50 bg-stone-900/98 backdrop-blur-xl border border-stone-800/90 rounded-2xl shadow-2xl overflow-hidden ring-1 ring-white/10 animate-in fade-in slide-in-from-top-2 duration-150">
+        <div className="absolute right-0 top-full mt-2 w-80 sm:w-92 z-50 isolate bg-stone-950 border border-stone-800 rounded-2xl shadow-2xl overflow-hidden ring-1 ring-white/10 animate-in fade-in slide-in-from-top-2 duration-150">
           {/* Header */}
-          <div className="flex items-center justify-between px-4 py-3 bg-stone-950/60 border-b border-stone-800/80">
+          <div className="flex items-center justify-between px-4 py-3 bg-stone-950 border-b border-stone-800">
             <div className="flex items-center space-x-2 text-stone-200">
               <Settings className="w-4 h-4 text-amber-400" />
               <span className="font-semibold text-xs tracking-wider uppercase">
