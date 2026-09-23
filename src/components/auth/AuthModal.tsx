@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { useCoffee } from '../../context/CoffeeContext';
 import { useI18n } from '../../i18n';
+import { useTheme } from '../../context/ThemeContext';
 import {
   signInWithApple,
   signInWithGoogle,
@@ -45,6 +46,8 @@ export const AuthModal: React.FC = () => {
     logs,
   } = useCoffee();
   const { language, t } = useI18n();
+  const { currentThemeInfo } = useTheme();
+  const isDarkTheme = currentThemeInfo.isDark;
 
   const [activeTab, setActiveTab] = useState<'login' | 'config'>('login');
   const [authMethod, setAuthMethod] = useState<'password' | 'otp'>('password');
@@ -390,7 +393,11 @@ export const AuthModal: React.FC = () => {
                     type="button"
                     onClick={handleGoogleLogin}
                     disabled={isSubmitting}
-                    className="w-full p-3 rounded-2xl bg-white hover:bg-stone-100 text-stone-900 font-bold text-xs sm:text-sm transition flex items-center justify-center space-x-3 shadow-md disabled:opacity-50"
+                    className={`w-full p-3 rounded-2xl font-bold text-xs sm:text-sm transition flex items-center justify-center space-x-3 shadow-md disabled:opacity-50 ${
+                      isDarkTheme
+                        ? 'bg-white hover:bg-stone-100 text-stone-900'
+                        : 'bg-stone-100 hover:bg-stone-200 text-stone-900 border border-stone-300'
+                    }`}
                   >
                     <svg className="w-4 h-4" viewBox="0 0 24 24">
                       <path
@@ -418,7 +425,11 @@ export const AuthModal: React.FC = () => {
                     type="button"
                     onClick={handleAppleLogin}
                     disabled={isSubmitting}
-                    className="w-full p-3 rounded-2xl bg-stone-950 hover:bg-stone-800 text-white font-bold text-xs sm:text-sm transition flex items-center justify-center space-x-3 border border-stone-700 shadow-md disabled:opacity-50"
+                    className={`w-full p-3 rounded-2xl font-bold text-xs sm:text-sm transition flex items-center justify-center space-x-3 border shadow-md disabled:opacity-50 ${
+                      isDarkTheme
+                        ? 'bg-stone-950 hover:bg-stone-800 text-white border-stone-700'
+                        : 'bg-stone-100 hover:bg-stone-200 text-stone-900 border-stone-300'
+                    }`}
                   >
                     <svg className="w-4 h-4 fill-current" viewBox="0 0 170 170">
                       <path d="M150.37 130.25c-2.45 5.66-5.35 10.87-8.71 15.66-4.58 6.53-8.33 11.05-11.22 13.56-4.48 4.12-9.28 6.23-14.42 6.35-3.69 0-8.14-1.05-13.32-3.18-5.19-2.12-9.97-3.17-14.34-3.17-4.58 0-9.49 1.05-14.75 3.17-5.26 2.13-9.5 3.24-12.74 3.35-4.35.13-9.16-1.9-14.42-6.08-3.7-3.04-7.69-7.85-11.97-14.42-6.3-9.67-11.29-20.66-14.97-32.96-3.68-12.3-5.52-23.75-5.52-34.34 0-14.54 3.7-26.68 11.1-36.42 7.4-9.74 16.71-14.73 27.93-14.98 4.67 0 9.9 1.16 15.69 3.48 5.79 2.32 9.53 3.53 11.22 3.63 2.12-.22 6.09-1.52 11.91-3.9 5.82-2.38 10.8-3.41 14.95-3.08 16.34 1.34 28.53 8.35 36.56 21.03-14.34 8.71-21.32 20.66-20.94 35.86.37 11.83 4.8 21.73 13.29 29.7 4.12 3.82 8.78 6.74 13.98 8.77-2.93 8.71-6.73 17.15-11.4 25.32zM119.22 31.84c0-7.72 2.76-14.96 8.28-21.72 5.52-6.76 12.39-10.45 20.61-11.08.11 1.09.16 2.07.16 2.94 0 7.61-2.93 15.01-8.79 22.2-5.86 7.18-12.87 11.06-21.03 11.64-.11-1.09-.16-2.07-.16-2.94z" />
