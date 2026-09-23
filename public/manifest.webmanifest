@@ -1,0 +1,20 @@
+{
+  "name": "BrewLog 萃取日記",
+  "short_name": "BrewLog",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#f3f1ee",
+  "theme_color": "#321b15",
+  "icons": [
+    {
+      "src": "/brewlog-icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "/brewlog-icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ]
+}

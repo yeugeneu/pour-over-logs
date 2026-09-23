@@ -1,0 +1,19 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" role="img" aria-labelledby="title desc">
+  <title id="title">BrewLog</title>
+  <desc id="desc">Minimal pour-over dripper and coffee server</desc>
+  <rect width="512" height="512" rx="112" fill="#f3f1ee"/>
+  <g fill="none" stroke="#3b2a21" stroke-width="13" stroke-linecap="round" stroke-linejoin="round">
+    <!-- Dripper and handle -->
+    <path d="M157 145h198l-70 142h-58z"/>
+    <path d="M355 163c54-5 67 30 49 55-12 17-30 27-57 30"/>
+    <path d="M144 286h224"/>
+    <path d="M188 286l11 25h114l11-25"/>
+    <!-- Coffee stream -->
+    <path d="M256 311v82"/>
+    <!-- Server -->
+    <path d="M155 338h139l20 93c3 15-10 29-25 29H181c-15 0-28-14-25-29z"/>
+    <path d="M314 359c49-8 69 14 74 43 4 24-13 40-39 45"/>
+  </g>
+  <path d="M163 408c34-18 57-16 83-4 25 12 48 12 66-1l8 29c2 9-6 18-17 18H183c-12 0-22-11-20-22z" fill="#3b2a21"/>
+  <path d="M157 145h198" fill="none" stroke="#3b2a21" stroke-width="13" stroke-linecap="round"/>
+</svg>
