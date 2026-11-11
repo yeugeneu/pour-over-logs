@@ -33,6 +33,20 @@ interface LiveTimerProps {
   ) => void;
 }
 
+const formatStageDescription = (stage: PourStage) => {
+  if (!stage.description) return stage.description;
+  const circlePour = Math.round(stage.pourWaterGrams * 0.3);
+  const centerPour = Math.max(0, stage.pourWaterGrams - circlePour);
+  return stage.description
+    .replace(
+      /\d+g(\s*(?:快速)?同心圓(?:水流)?\s*\+\s*)\d+g/g,
+      `${circlePour}g$1${centerPour}g`
+    )
+    .replace(/(至(?:總水量)?\s*)\d+g/g, `$1${stage.targetWaterGrams}g`)
+    .replace(/(注水\s*|注完\s*)\d+g/g, `$1${stage.pourWaterGrams}g`)
+    .replace(/(悶蒸\s*)\d+(\s*秒)/g, `$1${stage.durationSeconds}$2`);
+};
+
 export const LiveTimer: React.FC<LiveTimerProps> = ({
   stages,
   totalTargetWater,
@@ -59,7 +73,7 @@ export const LiveTimer: React.FC<LiveTimerProps> = ({
   const [currentStageIdx, setCurrentStageIdx] = useState<number>(0);
   const [isTargetReached, setIsTargetReached] = useState(false);
   const [isMuted, setIsMuted] = useState<boolean>(soundService.getIsMuted());
-  const [showChart, setShowChart] = useState<boolean>(true);
+  const [showChart, setShowChart] = useState<boolean>(isScaleConnected);
   const [timerViewMode, setTimerViewMode] = useState<'animated' | 'compact'>('animated');
 
   // Time-series curve recording
@@ -412,7 +426,7 @@ export const LiveTimer: React.FC<LiveTimerProps> = ({
                 </div>
                 {currentStage.description && (
                   <p className="text-sm text-stone-300 mt-2 leading-relaxed">
-                    {currentStage.description}
+                    {formatStageDescription(currentStage)}
                   </p>
                 )}
               </div>
@@ -456,7 +470,7 @@ export const LiveTimer: React.FC<LiveTimerProps> = ({
             </div>
             {stages[currentStageIdx + 1].description && (
               <p className="mt-1 text-xs leading-relaxed text-stone-500">
-                {stages[currentStageIdx + 1].description}
+                {formatStageDescription(stages[currentStageIdx + 1])}
               </p>
             )}
           </div>

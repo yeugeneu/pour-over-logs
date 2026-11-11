@@ -7,7 +7,7 @@ import { calculateExtractionYield, formatTime } from '../../utils/coffeeMath';
 import { FlavorRadarChart } from '../sensory/FlavorRadarChart';
 import { FlavorTagSelector } from '../sensory/FlavorTagSelector';
 import { DialinAdvisorCard } from '../advisor/DialinAdvisorCard';
-import { X, Sparkles, Award, Check, Coffee, Sliders, ChevronRight } from 'lucide-react';
+import { X, Sparkles, Award, Check, Coffee, Sliders, ChevronRight, ChevronDown, ChevronUp } from 'lucide-react';
 
 export const TastingDialinModal: React.FC = () => {
   const {
@@ -22,6 +22,8 @@ export const TastingDialinModal: React.FC = () => {
   const { language, t } = useI18n();
 
   const [activeTab, setActiveTab] = useState<'sensory' | 'dialin'>('sensory');
+  const [showProSensory, setShowProSensory] = useState<boolean>(false);
+  const [quickTaste, setQuickTaste] = useState<'sour' | 'balanced' | 'bitter'>('balanced');
 
   const log = logs.find((l) => l.id === tastingLogId);
   const bean = log ? getBeanById(log.beanId) : undefined;
@@ -63,8 +65,50 @@ export const TastingDialinModal: React.FC = () => {
       setDialinNotes(log.dialinAdjustmentNotes || '');
       setIsGolden(!!log.isGolden);
       setActiveTab(initialTastingTab || 'sensory');
+      setShowProSensory(Boolean(log.tdsPercent));
+      if (log.extractionAssessment === 'under_extracted') setQuickTaste('sour');
+      else if (log.extractionAssessment === 'over_extracted') setQuickTaste('bitter');
+      else setQuickTaste('balanced');
     }
   }, [log, initialTastingTab, isTastingModalOpen]);
+
+  const applyQuickTaste = (taste: 'sour' | 'balanced' | 'bitter') => {
+    setQuickTaste(taste);
+    if (taste === 'sour') {
+      setSensory({
+        acidity: 8.5,
+        sweetness: 5.5,
+        body: 5.5,
+        clarity: 7.5,
+        balance: 5.5,
+        aftertaste: 5.5,
+        bitterness: 2.5,
+      });
+      setOverallScore(6.5);
+    } else if (taste === 'balanced') {
+      setSensory({
+        acidity: 7.5,
+        sweetness: 8.5,
+        body: 7.5,
+        clarity: 8.0,
+        balance: 8.5,
+        aftertaste: 8.0,
+        bitterness: 3.0,
+      });
+      setOverallScore(8.5);
+    } else {
+      setSensory({
+        acidity: 5.0,
+        sweetness: 5.5,
+        body: 7.5,
+        clarity: 5.5,
+        balance: 5.5,
+        aftertaste: 5.0,
+        bitterness: 7.5,
+      });
+      setOverallScore(6.0);
+    }
+  };
 
   if (!isTastingModalOpen || !log) return null;
 
@@ -190,206 +234,196 @@ export const TastingDialinModal: React.FC = () => {
         <div className="p-4 sm:p-6 overflow-y-auto flex-1 space-y-6">
           {/* TAB 1: SENSORY CUPPING */}
           {activeTab === 'sensory' && (
-            <div className="space-y-6">
-              {/* Radar & Score Overview */}
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6 items-center bg-stone-950/40 p-4 rounded-3xl border border-stone-800">
-                <div className="flex flex-col items-center justify-center">
-                  <FlavorRadarChart sensory={sensory} size="md" />
+            <div className="space-y-5">
+              {/* 1-Tap Quick Taste Check */}
+              <div className="p-4 bg-stone-950/60 rounded-2xl border border-stone-800 space-y-3">
+                <div className="flex items-center justify-between">
+                  <label className="text-xs font-bold text-stone-200">
+                    {language === 'zh-TW' ? '這杯喝起來如何？ (一鍵快速評估)' : 'How did this cup taste? (Quick Check)'}
+                  </label>
+                  <span className="text-[11px] text-stone-400">
+                    {language === 'zh-TW' ? '自動設定風味基底' : 'Auto-fills sensory baseline'}
+                  </span>
                 </div>
 
-                <div className="space-y-4">
-                  {/* Overall Cup Score Slider */}
-                  <div className="p-4 rounded-2xl bg-stone-900 border border-stone-800 space-y-2">
-                    <div className="flex items-center justify-between">
-                      <label className="text-xs font-bold text-stone-200">
-                        {t.sensory.overallScore} (Overall Score)
-                      </label>
-                      <div className="text-xl font-black font-mono text-amber-400 flex items-center gap-1">
-                        <span>{overallScore.toFixed(1)}</span>
-                        <span className="text-xs text-stone-400">/ 10 ★</span>
-                      </div>
-                    </div>
-
-                    <input
-                      type="range"
-                      min="1"
-                      max="10"
-                      step="0.1"
-                      value={overallScore}
-                      onChange={(e) => setOverallScore(parseFloat(e.target.value))}
-                      className="w-full accent-amber-500 cursor-pointer h-2 bg-stone-800 rounded-lg"
-                    />
-
-                    <div className="flex justify-between text-[10px] text-stone-500 font-mono">
-                      <span>1.0 平淡 / 瑕疵</span>
-                      <span>8.0 優質精品</span>
-                      <span>10.0 卓越神杯</span>
-                    </div>
-                  </div>
-
-                  {/* Refractometer TDS & EY */}
-                  <div className="p-3.5 rounded-2xl bg-stone-900 border border-stone-800 space-y-2">
-                    <div className="flex items-center justify-between">
-                      <span className="text-xs font-semibold text-stone-300">
-                        折射儀 TDS & 萃取率 (EY %)
-                      </span>
-                      {calculatedEY && (
-                        <span className="text-xs font-mono font-bold text-cyan-300 px-2 py-0.5 rounded-md bg-cyan-500/10 border border-cyan-500/20">
-                          EY: {calculatedEY}%
-                        </span>
-                      )}
-                    </div>
-
-                    <div className="flex items-center gap-2">
-                      <div className="flex-1 relative">
-                        <input
-                          type="number"
-                          step="0.01"
-                          placeholder="e.g. 1.35"
-                          value={tdsInput}
-                          onChange={(e) => setTdsInput(e.target.value)}
-                          className="w-full bg-stone-950 text-stone-100 font-mono text-xs px-3 py-2 rounded-xl border border-stone-800 focus:border-amber-500 focus:outline-none"
-                        />
-                        <span className="absolute right-3 top-1/2 -translate-y-1/2 text-xs text-stone-500 font-mono">
-                          % TDS
-                        </span>
-                      </div>
-                    </div>
-                  </div>
+                <div className="grid grid-cols-3 gap-2.5">
+                  {[
+                    {
+                      id: 'sour' as const,
+                      emoji: '🍋',
+                      title: language === 'zh-TW' ? '偏酸 / 偏淡' : 'Too Sour / Weak',
+                      sub: language === 'zh-TW' ? '萃取略少' : 'Under-extracted',
+                    },
+                    {
+                      id: 'balanced' as const,
+                      emoji: '✨',
+                      title: language === 'zh-TW' ? '順口好喝！' : 'Balanced & Sweet',
+                      sub: language === 'zh-TW' ? '恰到好處' : 'Just right',
+                    },
+                    {
+                      id: 'bitter' as const,
+                      emoji: '🍫',
+                      title: language === 'zh-TW' ? '偏苦 / 乾澀' : 'Too Bitter / Harsh',
+                      sub: language === 'zh-TW' ? '萃取過多' : 'Over-extracted',
+                    },
+                  ].map((opt) => (
+                    <button
+                      key={opt.id}
+                      type="button"
+                      onClick={() => applyQuickTaste(opt.id)}
+                      className={`p-3 rounded-2xl border text-center transition ${
+                        quickTaste === opt.id
+                          ? 'bg-amber-500/15 border-amber-500 text-stone-100 shadow-sm'
+                          : 'bg-stone-900/70 border-stone-800 text-stone-400 hover:bg-stone-800/50'
+                      }`}
+                    >
+                      <div className="text-xl mb-1">{opt.emoji}</div>
+                      <div className="text-xs font-bold text-stone-200">{opt.title}</div>
+                      <div className="text-[10px] text-stone-400 mt-0.5">{opt.sub}</div>
+                    </button>
+                  ))}
                 </div>
               </div>
 
-              {/* 7 Sensory Sliders */}
-              <div className="space-y-4">
-                <h4 className="text-xs font-bold text-amber-400 uppercase tracking-wider">
-                  {t.sensory.radarTitle} (Sensory Dimensions)
-                </h4>
-
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
-                  {/* Acidity */}
-                  <div className="p-3.5 bg-stone-950/60 rounded-2xl border border-stone-800 space-y-2">
-                    <div className="flex justify-between items-center text-xs">
-                      <span className="font-semibold text-stone-200">{t.sensory.acidity}</span>
-                      <span className="font-mono font-bold text-amber-400">{sensory.acidity.toFixed(1)}</span>
-                    </div>
-                    <input
-                      type="range"
-                      min="1"
-                      max="10"
-                      step="0.5"
-                      value={sensory.acidity}
-                      onChange={(e) => setSensory({ ...sensory, acidity: parseFloat(e.target.value) })}
-                      className="w-full accent-amber-500 h-1.5 bg-stone-800 rounded cursor-pointer"
-                    />
+              {/* Overall Cup Score Slider */}
+              <div className="p-4 rounded-2xl bg-amber-500/10 border border-amber-500/30 space-y-2">
+                <div className="flex items-center justify-between">
+                  <label className="text-xs font-bold text-amber-300">
+                    {t.sensory.overallScore} (Overall Score)
+                  </label>
+                  <div className="text-xl font-black font-mono text-amber-400 flex items-center gap-1">
+                    <span>{overallScore.toFixed(1)}</span>
+                    <span className="text-xs text-stone-400">/ 10 ★</span>
                   </div>
+                </div>
 
-                  {/* Sweetness */}
-                  <div className="p-3.5 bg-stone-950/60 rounded-2xl border border-stone-800 space-y-2">
-                    <div className="flex justify-between items-center text-xs">
-                      <span className="font-semibold text-stone-200">{t.sensory.sweetness}</span>
-                      <span className="font-mono font-bold text-amber-400">{sensory.sweetness.toFixed(1)}</span>
-                    </div>
-                    <input
-                      type="range"
-                      min="1"
-                      max="10"
-                      step="0.5"
-                      value={sensory.sweetness}
-                      onChange={(e) => setSensory({ ...sensory, sweetness: parseFloat(e.target.value) })}
-                      className="w-full accent-amber-500 h-1.5 bg-stone-800 rounded cursor-pointer"
-                    />
-                  </div>
+                <input
+                  type="range"
+                  min="1"
+                  max="10"
+                  step="0.5"
+                  value={overallScore}
+                  onChange={(e) => setOverallScore(parseFloat(e.target.value))}
+                  className="w-full accent-amber-500 cursor-pointer h-2 bg-stone-800 rounded-lg"
+                />
 
-                  {/* Body */}
-                  <div className="p-3.5 bg-stone-950/60 rounded-2xl border border-stone-800 space-y-2">
-                    <div className="flex justify-between items-center text-xs">
-                      <span className="font-semibold text-stone-200">{t.sensory.body}</span>
-                      <span className="font-mono font-bold text-amber-400">{sensory.body.toFixed(1)}</span>
-                    </div>
-                    <input
-                      type="range"
-                      min="1"
-                      max="10"
-                      step="0.5"
-                      value={sensory.body}
-                      onChange={(e) => setSensory({ ...sensory, body: parseFloat(e.target.value) })}
-                      className="w-full accent-amber-500 h-1.5 bg-stone-800 rounded cursor-pointer"
-                    />
-                  </div>
-
-                  {/* Clarity */}
-                  <div className="p-3.5 bg-stone-950/60 rounded-2xl border border-stone-800 space-y-2">
-                    <div className="flex justify-between items-center text-xs">
-                      <span className="font-semibold text-stone-200">{t.sensory.clarity}</span>
-                      <span className="font-mono font-bold text-amber-400">{sensory.clarity.toFixed(1)}</span>
-                    </div>
-                    <input
-                      type="range"
-                      min="1"
-                      max="10"
-                      step="0.5"
-                      value={sensory.clarity}
-                      onChange={(e) => setSensory({ ...sensory, clarity: parseFloat(e.target.value) })}
-                      className="w-full accent-amber-500 h-1.5 bg-stone-800 rounded cursor-pointer"
-                    />
-                  </div>
-
-                  {/* Balance */}
-                  <div className="p-3.5 bg-stone-950/60 rounded-2xl border border-stone-800 space-y-2">
-                    <div className="flex justify-between items-center text-xs">
-                      <span className="font-semibold text-stone-200">{t.sensory.balance}</span>
-                      <span className="font-mono font-bold text-amber-400">{sensory.balance.toFixed(1)}</span>
-                    </div>
-                    <input
-                      type="range"
-                      min="1"
-                      max="10"
-                      step="0.5"
-                      value={sensory.balance}
-                      onChange={(e) => setSensory({ ...sensory, balance: parseFloat(e.target.value) })}
-                      className="w-full accent-amber-500 h-1.5 bg-stone-800 rounded cursor-pointer"
-                    />
-                  </div>
-
-                  {/* Aftertaste */}
-                  <div className="p-3.5 bg-stone-950/60 rounded-2xl border border-stone-800 space-y-2">
-                    <div className="flex justify-between items-center text-xs">
-                      <span className="font-semibold text-stone-200">{t.sensory.aftertaste}</span>
-                      <span className="font-mono font-bold text-amber-400">{sensory.aftertaste.toFixed(1)}</span>
-                    </div>
-                    <input
-                      type="range"
-                      min="1"
-                      max="10"
-                      step="0.5"
-                      value={sensory.aftertaste}
-                      onChange={(e) => setSensory({ ...sensory, aftertaste: parseFloat(e.target.value) })}
-                      className="w-full accent-amber-500 h-1.5 bg-stone-800 rounded cursor-pointer"
-                    />
-                  </div>
-
-                  {/* Bitterness */}
-                  <div className="p-3.5 bg-stone-950/60 rounded-2xl border border-stone-800 space-y-2 sm:col-span-2">
-                    <div className="flex justify-between items-center text-xs">
-                      <span className="font-semibold text-stone-200">{t.sensory.bitterness}</span>
-                      <span className="font-mono font-bold text-amber-400">{sensory.bitterness.toFixed(1)}</span>
-                    </div>
-                    <input
-                      type="range"
-                      min="1"
-                      max="10"
-                      step="0.5"
-                      value={sensory.bitterness}
-                      onChange={(e) => setSensory({ ...sensory, bitterness: parseFloat(e.target.value) })}
-                      className="w-full accent-rose-500 h-1.5 bg-stone-800 rounded cursor-pointer"
-                    />
-                  </div>
+                <div className="flex justify-between text-[10px] text-stone-400 font-mono">
+                  <span>1.0 平淡 / 瑕疵</span>
+                  <span>8.0 優質好喝</span>
+                  <span>10.0 卓越神杯</span>
                 </div>
               </div>
 
               {/* Flavor Wheel Tags */}
               <div className="space-y-2">
                 <FlavorTagSelector selectedTags={flavorTags} onChange={setFlavorTags} />
+              </div>
+
+              {/* Progressive Disclosure: Pro 7-Axis Sliders, Radar & Refractometer TDS */}
+              <div className="rounded-2xl border border-stone-800 bg-stone-950/40 overflow-hidden">
+                <button
+                  type="button"
+                  onClick={() => setShowProSensory((prev) => !prev)}
+                  className="w-full px-4 py-3 flex items-center justify-between text-xs font-semibold text-stone-300 hover:bg-stone-900/60 transition"
+                >
+                  <div className="flex items-center gap-2">
+                    <Sliders className="w-3.5 h-3.5 text-amber-500" />
+                    <span>
+                      {language === 'zh-TW'
+                        ? '進階專業杯測：7 軸細項滑桿、風味雷達圖與折射儀 TDS'
+                        : 'Advanced SCA Cupping: 7-Axis Sliders, Radar & Refractometer TDS'}
+                    </span>
+                  </div>
+                  {showProSensory ? (
+                    <ChevronUp className="w-4 h-4 text-stone-400" />
+                  ) : (
+                    <ChevronDown className="w-4 h-4 text-stone-400" />
+                  )}
+                </button>
+
+                {showProSensory && (
+                  <div className="p-4 border-t border-stone-800 space-y-5 bg-stone-950/60">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6 items-center bg-stone-900/50 p-4 rounded-2xl border border-stone-800">
+                      <div className="flex flex-col items-center justify-center">
+                        <FlavorRadarChart sensory={sensory} size="md" />
+                      </div>
+
+                      {/* Refractometer TDS & EY */}
+                      <div className="p-3.5 rounded-2xl bg-stone-950 border border-stone-800 space-y-2">
+                        <div className="flex items-center justify-between">
+                          <span className="text-xs font-semibold text-stone-300">
+                            折射儀 TDS & 萃取率 (EY %)
+                          </span>
+                          {calculatedEY && (
+                            <span className="text-xs font-mono font-bold text-cyan-300 px-2 py-0.5 rounded-md bg-cyan-500/10 border border-cyan-500/20">
+                              EY: {calculatedEY}%
+                            </span>
+                          )}
+                        </div>
+
+                        <div className="flex items-center gap-2">
+                          <div className="flex-1 relative">
+                            <input
+                              type="number"
+                              step="0.01"
+                              placeholder="e.g. 1.35"
+                              value={tdsInput}
+                              onChange={(e) => setTdsInput(e.target.value)}
+                              className="w-full bg-stone-900 text-stone-100 font-mono text-xs px-3 py-2 rounded-xl border border-stone-800 focus:border-amber-500 focus:outline-none"
+                            />
+                            <span className="absolute right-3 top-1/2 -translate-y-1/2 text-xs text-stone-500 font-mono">
+                              % TDS
+                            </span>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* 7 Sensory Sliders */}
+                    <div className="space-y-3">
+                      <h4 className="text-xs font-bold text-amber-400 uppercase tracking-wider">
+                        {t.sensory.radarTitle} (Sensory Dimensions)
+                      </h4>
+
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                        {([
+                          { key: 'acidity', label: t.sensory.acidity, accent: 'accent-amber-500' },
+                          { key: 'sweetness', label: t.sensory.sweetness, accent: 'accent-amber-500' },
+                          { key: 'body', label: t.sensory.body, accent: 'accent-amber-500' },
+                          { key: 'clarity', label: t.sensory.clarity, accent: 'accent-amber-500' },
+                          { key: 'balance', label: t.sensory.balance, accent: 'accent-amber-500' },
+                          { key: 'aftertaste', label: t.sensory.aftertaste, accent: 'accent-amber-500' },
+                          { key: 'bitterness', label: t.sensory.bitterness, accent: 'accent-rose-500', fullWidth: true },
+                        ] as const).map((item) => (
+                          <div
+                            key={item.key}
+                            className={`p-3 bg-stone-900/70 rounded-xl border border-stone-800 space-y-1.5 ${
+                              'fullWidth' in item && item.fullWidth ? 'sm:col-span-2' : ''
+                            }`}
+                          >
+                            <div className="flex justify-between items-center text-xs">
+                              <span className="font-semibold text-stone-200">{item.label}</span>
+                              <span className="font-mono font-bold text-amber-400">
+                                {sensory[item.key].toFixed(1)}
+                              </span>
+                            </div>
+                            <input
+                              type="range"
+                              min="1"
+                              max="10"
+                              step="0.5"
+                              value={sensory[item.key]}
+                              onChange={(e) =>
+                                setSensory({ ...sensory, [item.key]: parseFloat(e.target.value) })
+                              }
+                              className={`w-full ${item.accent} h-1.5 bg-stone-800 rounded cursor-pointer`}
+                            />
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  </div>
+                )}
               </div>
             </div>
           )}

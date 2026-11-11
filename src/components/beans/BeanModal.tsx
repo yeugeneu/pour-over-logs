@@ -6,7 +6,7 @@ import { calculateDaysOffRoast, getRestingStageInfo } from '../../utils/coffeeMa
 import { FlavorTagSelector } from '../sensory/FlavorTagSelector';
 import { BeanScannerModal } from './BeanScannerModal';
 import { ExtractedBeanMetadata } from '../../services/aiScanner';
-import { X, Layers, Check, Calendar, Camera, Sparkles } from 'lucide-react';
+import { X, Layers, Check, Calendar, Camera, Sparkles, ChevronDown, ChevronUp } from 'lucide-react';
 
 export const BeanModal: React.FC = () => {
   const { isBeanModalOpen, editingBeanId, closeBeanModal, addBean, updateBean, getBeanById } = useCoffee();
@@ -30,11 +30,13 @@ export const BeanModal: React.FC = () => {
   const [status, setStatus] = useState<BeanStatus>('active');
   const [notes, setNotes] = useState('');
 
-  // AI Scanner state
+  // AI Scanner & Progressive Disclosure state
   const [isScannerOpen, setIsScannerOpen] = useState(false);
   const [autoFilledNotice, setAutoFilledNotice] = useState(false);
+  const [showMoreDetails, setShowMoreDetails] = useState(false);
 
   useEffect(() => {
+    setShowMoreDetails(Boolean(editingBeanId));
     if (editingBeanId) {
       const bean = getBeanById(editingBeanId);
       if (bean) {
@@ -293,7 +295,7 @@ export const BeanModal: React.FC = () => {
               />
             </div>
 
-            {/* Roaster & Origin Grid */}
+            {/* Roaster & Roast Level Grid (Essential Upfront Fields) */}
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               <div>
                 <label className="block text-xs font-semibold text-stone-300 mb-1">
@@ -307,81 +309,6 @@ export const BeanModal: React.FC = () => {
                   onChange={(e) => setRoaster(e.target.value)}
                   className="w-full bg-stone-950 text-stone-100 text-xs px-3.5 py-2.5 rounded-xl border border-stone-800 focus:border-amber-500 focus:outline-none"
                 />
-              </div>
-
-              <div>
-                <label className="block text-xs font-semibold text-stone-300 mb-1">
-                  {t.beans.origin}
-                </label>
-                <input
-                  type="text"
-                  placeholder="e.g. Ethiopia / Panama / Colombia"
-                  value={origin}
-                  onChange={(e) => setOrigin(e.target.value)}
-                  className="w-full bg-stone-950 text-stone-100 text-xs px-3.5 py-2.5 rounded-xl border border-stone-800 focus:border-amber-500 focus:outline-none"
-                />
-              </div>
-            </div>
-
-            {/* Region, Farm & Varietal Grid */}
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-              <div>
-                <label className="block text-xs font-semibold text-stone-300 mb-1">
-                  {t.beans.region}
-                </label>
-                <input
-                  type="text"
-                  placeholder="e.g. Yirgacheffe / Boquete"
-                  value={region}
-                  onChange={(e) => setRegion(e.target.value)}
-                  className="w-full bg-stone-950 text-stone-100 text-xs px-3 py-2 rounded-xl border border-stone-800 focus:border-amber-500 focus:outline-none"
-                />
-              </div>
-
-              <div>
-                <label className="block text-xs font-semibold text-stone-300 mb-1">
-                  {t.beans.varietal}
-                </label>
-                <input
-                  type="text"
-                  placeholder="e.g. Geisha / Heirloom / SL28"
-                  value={varietal}
-                  onChange={(e) => setVarietal(e.target.value)}
-                  className="w-full bg-stone-950 text-stone-100 text-xs px-3 py-2 rounded-xl border border-stone-800 focus:border-amber-500 focus:outline-none"
-                />
-              </div>
-
-              <div>
-                <label className="block text-xs font-semibold text-stone-300 mb-1">
-                  {language === 'zh-TW' ? '海拔 (Elevation)' : 'Elevation'}
-                </label>
-                <input
-                  type="text"
-                  placeholder="e.g. 1950-2100m"
-                  value={elevationMeters}
-                  onChange={(e) => setElevationMeters(e.target.value)}
-                  className="w-full bg-stone-950 text-stone-100 text-xs px-3 py-2 rounded-xl border border-stone-800 focus:border-amber-500 focus:outline-none"
-                />
-              </div>
-            </div>
-
-            {/* Process & Roast Level */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-              <div>
-                <label className="block text-xs font-semibold text-stone-300 mb-1">
-                  {t.beans.process}
-                </label>
-                <select
-                  value={process}
-                  onChange={(e) => setProcess(e.target.value as ProcessMethod)}
-                  className="w-full bg-stone-950 text-stone-100 text-xs px-3 py-2.5 rounded-xl border border-stone-800 focus:border-amber-500 focus:outline-none"
-                >
-                  {processOptions.map((opt) => (
-                    <option key={opt} value={opt}>
-                      {processLabels[opt]}
-                    </option>
-                  ))}
-                </select>
               </div>
 
               <div>
@@ -441,108 +368,212 @@ export const BeanModal: React.FC = () => {
               />
             </div>
 
-            {/* Weights, Price & Status */}
-            <div className="grid grid-cols-1 sm:grid-cols-4 gap-3">
-              <div>
-                <label className="block text-xs font-semibold text-stone-300 mb-1">
-                  {language === 'zh-TW' ? '總克重 (Total g)' : 'Total (g)'}
-                </label>
-                <input
-                  type="number"
-                  value={totalWeightGrams}
-                  onChange={(e) => {
-                    const val = e.target.value;
-                    const num = val === '' ? '' : parseFloat(val);
-                    setTotalWeightGrams(num);
-                    if (!editingBeanId) setRemainingWeightGrams(num);
-                  }}
-                  className="w-full bg-stone-950 text-stone-100 font-mono text-xs px-3 py-2 rounded-xl border border-stone-800 focus:border-amber-500 focus:outline-none"
-                />
-              </div>
-
-              <div>
-                <label className="block text-xs font-semibold text-stone-300 mb-1">
-                  {language === 'zh-TW' ? '剩餘克重 (Rem. g)' : 'Remaining (g)'}
-                </label>
-                <input
-                  type="number"
-                  value={remainingWeightGrams}
-                  onChange={(e) => {
-                    const val = e.target.value;
-                    setRemainingWeightGrams(val === '' ? '' : parseFloat(val));
-                  }}
-                  className="w-full bg-stone-950 text-stone-100 font-mono text-xs px-3 py-2 rounded-xl border border-stone-800 focus:border-amber-500 focus:outline-none"
-                />
-              </div>
-
-              <div>
-                <div className="flex items-center justify-between mb-1">
-                  <label className="block text-xs font-semibold text-stone-300">
-                    {language === 'zh-TW' ? '購買價格 (Price)' : 'Price'}
-                  </label>
-                  {price !== '' && totalWeightGrams !== '' && Number(totalWeightGrams) > 0 && (
-                    <span className="text-[10px] text-amber-400 font-mono">
-                      ≈ {currency} {((Number(price) / Number(totalWeightGrams)) * 15).toFixed(1)}/杯
-                    </span>
+            {/* Progressive Disclosure: Origin, Process, Weights, Price & Notes */}
+            <div className="rounded-2xl border border-stone-800 bg-stone-950/40 overflow-hidden">
+              <button
+                type="button"
+                onClick={() => setShowMoreDetails((prev) => !prev)}
+                className="w-full px-4 py-3 flex items-center justify-between text-xs font-semibold text-stone-300 hover:bg-stone-900/60 transition"
+              >
+                <span>
+                  {language === 'zh-TW'
+                    ? '更多產區、處理法、克重與價格細節 (選填)'
+                    : 'More Origin, Process, Weight & Price Details (Optional)'}
+                </span>
+                <div className="flex items-center gap-2">
+                  <span className="text-[11px] font-mono text-stone-400 hidden sm:inline">
+                    {origin.split(' ')[0]} • {process} • {totalWeightGrams || 200}g
+                  </span>
+                  {showMoreDetails ? (
+                    <ChevronUp className="w-4 h-4 text-stone-400" />
+                  ) : (
+                    <ChevronDown className="w-4 h-4 text-stone-400" />
                   )}
                 </div>
-                <div className="flex gap-1.5">
-                  <select
-                    value={currency}
-                    onChange={(e) => setCurrency(e.target.value)}
-                    className="bg-stone-950 text-stone-300 text-xs px-2 py-2 rounded-xl border border-stone-800 focus:border-amber-500 focus:outline-none"
-                  >
-                    <option value="TWD">NT$</option>
-                    <option value="CAD">CAD $</option>
-                    <option value="USD">USD $</option>
-                    <option value="EUR">EUR €</option>
-                    <option value="GBP">GBP £</option>
-                    <option value="JPY">JPY ¥</option>
-                    <option value="HKD">HK$</option>
-                    <option value="AUD">AUD $</option>
-                    <option value="SGD">SGD $</option>
-                  </select>
-                  <input
-                    type="number"
-                    placeholder="e.g. 450"
-                    value={price}
-                    onChange={(e) => {
-                      const val = e.target.value;
-                      setPrice(val === '' ? '' : parseFloat(val));
-                    }}
-                    className="flex-1 bg-stone-950 text-stone-100 font-mono text-xs px-3 py-2 rounded-xl border border-stone-800 focus:border-amber-500 focus:outline-none"
-                  />
+              </button>
+
+              {showMoreDetails && (
+                <div className="p-4 border-t border-stone-800 space-y-4 bg-stone-950/60">
+                  {/* Origin & Process */}
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    <div>
+                      <label className="block text-xs font-semibold text-stone-300 mb-1">
+                        {t.beans.origin}
+                      </label>
+                      <input
+                        type="text"
+                        placeholder="e.g. Ethiopia / Panama / Colombia"
+                        value={origin}
+                        onChange={(e) => setOrigin(e.target.value)}
+                        className="w-full bg-stone-900 text-stone-100 text-xs px-3.5 py-2.5 rounded-xl border border-stone-800 focus:border-amber-500 focus:outline-none"
+                      />
+                    </div>
+
+                    <div>
+                      <label className="block text-xs font-semibold text-stone-300 mb-1">
+                        {t.beans.process}
+                      </label>
+                      <select
+                        value={process}
+                        onChange={(e) => setProcess(e.target.value as ProcessMethod)}
+                        className="w-full bg-stone-900 text-stone-100 text-xs px-3 py-2.5 rounded-xl border border-stone-800 focus:border-amber-500 focus:outline-none"
+                      >
+                        {processOptions.map((opt) => (
+                          <option key={opt} value={opt}>
+                            {processLabels[opt]}
+                          </option>
+                        ))}
+                      </select>
+                    </div>
+                  </div>
+
+                  {/* Region, Varietal & Elevation Grid */}
+                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                    <div>
+                      <label className="block text-xs font-semibold text-stone-300 mb-1">
+                        {t.beans.region}
+                      </label>
+                      <input
+                        type="text"
+                        placeholder="e.g. Yirgacheffe / Boquete"
+                        value={region}
+                        onChange={(e) => setRegion(e.target.value)}
+                        className="w-full bg-stone-900 text-stone-100 text-xs px-3 py-2 rounded-xl border border-stone-800 focus:border-amber-500 focus:outline-none"
+                      />
+                    </div>
+
+                    <div>
+                      <label className="block text-xs font-semibold text-stone-300 mb-1">
+                        {t.beans.varietal}
+                      </label>
+                      <input
+                        type="text"
+                        placeholder="e.g. Geisha / Heirloom / SL28"
+                        value={varietal}
+                        onChange={(e) => setVarietal(e.target.value)}
+                        className="w-full bg-stone-900 text-stone-100 text-xs px-3 py-2 rounded-xl border border-stone-800 focus:border-amber-500 focus:outline-none"
+                      />
+                    </div>
+
+                    <div>
+                      <label className="block text-xs font-semibold text-stone-300 mb-1">
+                        {language === 'zh-TW' ? '海拔 (Elevation)' : 'Elevation'}
+                      </label>
+                      <input
+                        type="text"
+                        placeholder="e.g. 1950-2100m"
+                        value={elevationMeters}
+                        onChange={(e) => setElevationMeters(e.target.value)}
+                        className="w-full bg-stone-900 text-stone-100 text-xs px-3 py-2 rounded-xl border border-stone-800 focus:border-amber-500 focus:outline-none"
+                      />
+                    </div>
+                  </div>
+
+                  {/* Weights, Price & Status */}
+                  <div className="grid grid-cols-1 sm:grid-cols-4 gap-3">
+                    <div>
+                      <label className="block text-xs font-semibold text-stone-300 mb-1">
+                        {language === 'zh-TW' ? '總克重 (Total g)' : 'Total (g)'}
+                      </label>
+                      <input
+                        type="number"
+                        value={totalWeightGrams}
+                        onChange={(e) => {
+                          const val = e.target.value;
+                          const num = val === '' ? '' : parseFloat(val);
+                          setTotalWeightGrams(num);
+                          if (!editingBeanId) setRemainingWeightGrams(num);
+                        }}
+                        className="w-full bg-stone-900 text-stone-100 font-mono text-xs px-3 py-2 rounded-xl border border-stone-800 focus:border-amber-500 focus:outline-none"
+                      />
+                    </div>
+
+                    <div>
+                      <label className="block text-xs font-semibold text-stone-300 mb-1">
+                        {language === 'zh-TW' ? '剩餘克重 (Rem. g)' : 'Remaining (g)'}
+                      </label>
+                      <input
+                        type="number"
+                        value={remainingWeightGrams}
+                        onChange={(e) => {
+                          const val = e.target.value;
+                          setRemainingWeightGrams(val === '' ? '' : parseFloat(val));
+                        }}
+                        className="w-full bg-stone-900 text-stone-100 font-mono text-xs px-3 py-2 rounded-xl border border-stone-800 focus:border-amber-500 focus:outline-none"
+                      />
+                    </div>
+
+                    <div>
+                      <div className="flex items-center justify-between mb-1">
+                        <label className="block text-xs font-semibold text-stone-300">
+                          {language === 'zh-TW' ? '購買價格 (Price)' : 'Price'}
+                        </label>
+                        {price !== '' && totalWeightGrams !== '' && Number(totalWeightGrams) > 0 && (
+                          <span className="text-[10px] text-amber-400 font-mono">
+                            ≈ {currency} {((Number(price) / Number(totalWeightGrams)) * 15).toFixed(1)}/杯
+                          </span>
+                        )}
+                      </div>
+                      <div className="flex gap-1.5">
+                        <select
+                          value={currency}
+                          onChange={(e) => setCurrency(e.target.value)}
+                          className="bg-stone-900 text-stone-300 text-xs px-2 py-2 rounded-xl border border-stone-800 focus:border-amber-500 focus:outline-none"
+                        >
+                          <option value="TWD">NT$</option>
+                          <option value="CAD">CAD $</option>
+                          <option value="USD">USD $</option>
+                          <option value="EUR">EUR €</option>
+                          <option value="GBP">GBP £</option>
+                          <option value="JPY">JPY ¥</option>
+                          <option value="HKD">HK$</option>
+                          <option value="AUD">AUD $</option>
+                          <option value="SGD">SGD $</option>
+                        </select>
+                        <input
+                          type="number"
+                          placeholder="e.g. 450"
+                          value={price}
+                          onChange={(e) => {
+                            const val = e.target.value;
+                            setPrice(val === '' ? '' : parseFloat(val));
+                          }}
+                          className="flex-1 bg-stone-900 text-stone-100 font-mono text-xs px-3 py-2 rounded-xl border border-stone-800 focus:border-amber-500 focus:outline-none"
+                        />
+                      </div>
+                    </div>
+
+                    <div>
+                      <label className="block text-xs font-semibold text-stone-300 mb-1">
+                        {t.beans.filterStatus}
+                      </label>
+                      <select
+                        value={status}
+                        onChange={(e) => setStatus(e.target.value as BeanStatus)}
+                        className="w-full bg-stone-900 text-stone-100 text-xs px-3 py-2.5 rounded-xl border border-stone-800 focus:border-amber-500 focus:outline-none"
+                      >
+                        <option value="active">{t.beans.active}</option>
+                        <option value="resting">{t.beans.resting}</option>
+                        <option value="finished">{t.beans.finished}</option>
+                      </select>
+                    </div>
+                  </div>
+
+                  {/* Notes */}
+                  <div>
+                    <label className="block text-xs font-semibold text-stone-300 mb-1">
+                      {language === 'zh-TW' ? '備註與保存建議 (Notes)' : 'Notes'}
+                    </label>
+                    <textarea
+                      rows={2}
+                      value={notes}
+                      onChange={(e) => setNotes(e.target.value)}
+                      placeholder="e.g. 建議單向排氣閥密封常溫保存，低研磨細粉率..."
+                      className="w-full bg-stone-900 text-stone-100 text-xs p-3 rounded-xl border border-stone-800 focus:border-amber-500 focus:outline-none resize-none"
+                    />
+                  </div>
                 </div>
-              </div>
-
-              <div>
-                <label className="block text-xs font-semibold text-stone-300 mb-1">
-                  {t.beans.filterStatus}
-                </label>
-                <select
-                  value={status}
-                  onChange={(e) => setStatus(e.target.value as BeanStatus)}
-                  className="w-full bg-stone-950 text-stone-100 text-xs px-3 py-2.5 rounded-xl border border-stone-800 focus:border-amber-500 focus:outline-none"
-                >
-                  <option value="active">{t.beans.active}</option>
-                  <option value="resting">{t.beans.resting}</option>
-                  <option value="finished">{t.beans.finished}</option>
-                </select>
-              </div>
-            </div>
-
-            {/* Notes */}
-            <div>
-              <label className="block text-xs font-semibold text-stone-300 mb-1">
-                {language === 'zh-TW' ? '備註與保存建議 (Notes)' : 'Notes'}
-              </label>
-              <textarea
-                rows={2}
-                value={notes}
-                onChange={(e) => setNotes(e.target.value)}
-                placeholder="e.g. 建議單向排氣閥密封常溫保存，低研磨細粉率..."
-                className="w-full bg-stone-950 text-stone-100 text-xs p-3 rounded-xl border border-stone-800 focus:border-amber-500 focus:outline-none resize-none"
-              />
+              )}
             </div>
 
             {/* Modal Footer */}
